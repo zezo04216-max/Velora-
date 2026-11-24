@@ -1,12 +1,9 @@
 {
-  "projectId": "valued-principle-n4cnq",
-  "appId": "1:247920290017:web:dfda314042e73104562fa0",
-  "apiKey": "AIzaSyA54TwsxxMyO1xEO2zFqU_A27N91pBgx7I",
-  "authDomain": "valued-principle-n4cnq.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-1c6fd264-b203-4cf6-81a2-03a5be71dbfc",
-  "storageBucket": "valued-principle-n4cnq.firebasestorage.app",
-  "messagingSenderId": "247920290017",
-  "measurementId": "",
-  "oAuthClientId": "247920290017-l1kh22s68f4v3jaad2s04s54hlvgh82n.apps.googleusercontent.com",
-  "recaptchaSiteKey": ""
+  "apiKey": "AIzaSyCxX127K_ADHqLPs933osLUTboKPyqgi_0",
+  "authDomain": "velora-6f788.firebaseapp.com",
+  "projectId": "velora-6f788",
+  "storageBucket": "velora-6f788.firebasestorage.app",
+  "messagingSenderId": "478507722320",
+  "appId": "1:478507722320:web:fc83a106a7df6ce5c45355",
+  "measurementId": "G-N7Z71E5T0C"
 }
