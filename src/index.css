@@ -1,0 +1,202 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Amiri", "Cormorant Garamond", Georgia, serif;
+  --font-editorial: "Cormorant Garamond", "Amiri", Georgia, serif;
+  --font-sans: "IBM Plex Sans Arabic", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+    background-color: #FAF7FD;
+    color: #24172E;
+  }
+
+  h1,
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-editorial {
+    font-family: var(--font-editorial);
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.velora-glass {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid #E8DCF3;
+}
+
+.velora-card {
+  background: #FFFFFF;
+  border: 1px solid #E8DCF3;
+  box-shadow: 0 12px 32px -18px rgba(91, 50, 120, 0.14);
+}
+
+.velora-tint {
+  background: #F3ECF9;
+}
+
+@keyframes velora-fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes velora-light-pulse {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.98;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes velora-light-burst {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.6);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-28px) scale(1.18);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-76px) scale(1.45);
+  }
+}
+
+@keyframes velora-card-emerge {
+  0% {
+    opacity: 0;
+    transform: translateY(42px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes velora-petal-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10vh, 0) rotate(0deg) scale(0.85);
+  }
+  12% {
+    opacity: var(--petal-opacity, 0.72);
+  }
+  50% {
+    transform: translate3d(var(--petal-sway, 28px), 52vh, 0) rotate(140deg) scale(1);
+  }
+  88% {
+    opacity: var(--petal-opacity, 0.65);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--petal-drift, -24px), 110vh, 0) rotate(290deg) scale(0.9);
+  }
+}
+
+@keyframes velora-cinematic-word {
+  0% {
+    opacity: 0;
+    letter-spacing: 0.55em;
+    transform: translate3d(0, 14px, 0) scale(0.92);
+    filter: blur(8px);
+  }
+  55% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 0.24em;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes velora-line-expand {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.animate-velora-enter {
+  animation: velora-fade-up 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-envelope-glow {
+  animation: velora-light-pulse 2.4s ease-in-out infinite;
+}
+
+.animate-envelope-burst {
+  animation: velora-light-burst 950ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-card-emerge {
+  animation: velora-card-emerge 680ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-petal-fall {
+  animation: velora-petal-fall var(--petal-duration, 12s) linear infinite;
+  will-change: transform, opacity;
+}
+
+.animate-cinematic-word {
+  animation: velora-cinematic-word 1.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-line-expand {
+  animation: velora-line-expand 1s cubic-bezier(0.16, 1, 0.3, 1) 250ms forwards;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-velora-enter,
+  .animate-envelope-glow,
+  .animate-envelope-burst,
+  .animate-card-emerge,
+  .animate-petal-fall,
+  .animate-cinematic-word,
+  .animate-line-expand {
+    animation: none !important;
+  }
+  .animate-petal-fall {
+    display: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
