@@ -35,6 +35,10 @@ export async function apiFetch<T = Record<string, unknown>>(
     parsed = {};
   }
 
+  const looksJson = (res.headers.get('content-type') || '').includes('application/json');
+  if (res.ok && !looksJson && path.startsWith('/api/')) {
+    throw new Error('الخدمة الخلفية (السيرفر) غير متصلة حاليًا في هذه النسخة التجريبية، لذلك تسجيل الدخول وحفظ البيانات غير متاحين الآن.');
+  }
   if (!res.ok) {
     const errMsg = typeof parsed.error === 'string' ? parsed.error : `حدث خطأ غير متوقع (${res.status})`;
     throw new Error(errMsg);
