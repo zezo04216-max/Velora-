@@ -1,57 +1,172 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Global Safety Net: deny all access unless explicitly matched
-    match /{document=**} {
-      allow read, write: if false;
-    }
 
-    function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email == 'zezo04216@gmail.com'
+        && request.auth.token.email_verified == true;
     }
+    function profile() { return get(/databases/$(database)/documents/users/$(uid())).data; }
+    function hasProfile() { return exists(/databases/$(database)/documents/users/$(uid())); }
+    function roleIs(r) { return signedIn() && hasProfile() && profile().role == r; }
+    function isStr(v, max) { return v is string && v.size() <= max; }
 
-    function isSignedIn() {
-      return request.auth != null && request.auth.token.email_verified == true;
-    }
+    match /{document=**} { allow read, write: if false; }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    function incoming() {
-      return request.resource.data;
-    }
-
-    function existing() {
-      return resource.data;
-    }
-
-    function isValidUserAuthRecord(data) {
-      return data.keys().hasAll(['uid', 'displayName', 'email', 'updatedAt'])
-        && data.keys().hasOnly(['uid', 'displayName', 'email', 'photoUrl', 'updatedAt'])
-        && isValidId(data.uid)
-        && data.uid == request.auth.uid
-        && data.displayName is string
-        && data.displayName.size() > 0
-        && data.displayName.size() <= 120
-        && data.email is string
-        && data.email.size() > 3
-        && data.email.size() <= 180
-        && data.email == request.auth.token.email
-        && (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 500))
-        && data.updatedAt == request.time;
-    }
-
+    // ---- users ----
     match /users/{userId} {
-      allow get: if isValidId(userId) && isOwner(userId);
-      allow list: if false;
-      allow create: if isValidId(userId) && isOwner(userId) && isValidUserAuthRecord(incoming());
-      allow update: if isValidId(userId)
-        && isOwner(userId)
-        && isValidUserAuthRecord(incoming())
-        && incoming().uid == existing().uid
-        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoUrl', 'updatedAt']);
+      allow read: if isAdmin() || (signedIn() && uid() == userId);
+      allow create: if signedIn() && uid() == userId
+        && request.resource.data.id == userId
+        && request.resource.data.status == 'active'
+        && request.resource.data.keys().hasOnly(['id','name','email','phone','role','status','avatarUrl','city','bio','createdAt'])
+        && isStr(request.resource.data.name, 120)
+        && (request.resource.data.role in ['client','venue_owner','photographer','service_provider']
+            || (request.resource.data.role == 'admin' && isAdmin()));
+      allow update: if isAdmin()
+        || (signedIn() && uid() == userId
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','phone','city','bio','avatarUrl','email','role'])
+            && (request.resource.data.role == resource.data.role
+                || (request.resource.data.role == 'admin' && isAdmin())));
       allow delete: if false;
+    }
+
+    // ---- listings: venues / photographers / services ----
+    match /venues/{id} {
+      allow read: if resource.data.status == 'approved' || isAdmin() || (signedIn() && resource.data.ownerId == uid());
+      allow create: if signedIn() && request.resource.data.ownerId == uid()
+        && (roleIs('venue_owner') || isAdmin())
+        && (isAdmin() || (request.resource.data.status == 'pending' && request.resource.data.featured == false))
+        && request.resource.data.avgRating == 0 && request.resource.data.reviewsCount == 0;
+      allow update, delete: if isAdmin();
+    }
+    match /photographers/{id} {
+      allow read: if resource.data.status == 'approved' || isAdmin() || (signedIn() && resource.data.ownerId == uid());
+      allow create: if signedIn() && request.resource.data.ownerId == uid()
+        && (roleIs('photographer') || isAdmin())
+        && (isAdmin() || (request.resource.data.status == 'pending' && request.resource.data.featured == false))
+        && request.resource.data.avgRating == 0 && request.resource.data.reviewsCount == 0;
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.ownerId == uid()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['albums']));
+      allow delete: if isAdmin();
+    }
+    match /services/{id} {
+      allow read: if resource.data.status == 'approved' || isAdmin() || (signedIn() && resource.data.ownerId == uid());
+      allow create: if signedIn() && request.resource.data.ownerId == uid()
+        && (roleIs('service_provider') || isAdmin())
+        && (isAdmin() || (request.resource.data.status == 'pending' && request.resource.data.featured == false))
+        && request.resource.data.avgRating == 0 && request.resource.data.reviewsCount == 0;
+      allow update, delete: if isAdmin();
+    }
+
+    // ---- customer requests (only signed-in providers and admin see all; clients see their own) ----
+    match /requests/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.clientId == uid())
+        || (signedIn() && hasProfile() && profile().role in ['venue_owner','photographer','service_provider']);
+      allow create: if signedIn() && request.resource.data.clientId == uid() && request.resource.data.status == 'open';
+      allow update, delete: if isAdmin();
+    }
+
+    // ---- bookings ----
+    match /bookings/{id} {
+      allow read: if isAdmin() || (signedIn() && (resource.data.clientId == uid() || resource.data.providerOwnerId == uid()));
+      allow create: if signedIn() && request.resource.data.clientId == uid()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.providerApproved == false && request.resource.data.adminApproved == false;
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.providerOwnerId == uid()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['providerApproved','providerNote','status','updatedAt'])
+            && request.resource.data.adminApproved == resource.data.adminApproved)
+        || (signedIn() && resource.data.clientId == uid()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+            && request.resource.data.status == 'cancelled');
+      allow delete: if false;
+    }
+    // Public date-hold markers so everyone can see which dates are taken.
+    match /slots/{id} {
+      allow read: if true;
+      allow create: if signedIn() && (isAdmin()
+        || get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.providerOwnerId == uid());
+      allow delete: if signedIn() && (isAdmin()
+        || get(/databases/$(database)/documents/bookings/$(resource.data.bookingId)).data.providerOwnerId == uid()
+        || get(/databases/$(database)/documents/bookings/$(resource.data.bookingId)).data.clientId == uid());
+      allow update: if false;
+    }
+
+    // ---- reviews ----
+    match /reviews/{id} {
+      allow read: if resource.data.status == 'approved' || isAdmin() || (signedIn() && resource.data.authorId == uid());
+      allow create: if signedIn() && request.resource.data.authorId == uid()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.rating is int && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+        && isStr(request.resource.data.commentAr, 1000);
+      allow update, delete: if isAdmin();
+    }
+
+    // ---- favorites ----
+    match /favorites/{id} {
+      allow read, delete: if signedIn() && resource.data.userId == uid();
+      allow create: if signedIn() && request.resource.data.userId == uid() && id.matches('^' + uid() + '_.*');
+      allow update: if false;
+    }
+
+    // ---- notifications ----
+    match /notifications/{id} {
+      allow read: if signedIn() && (resource.data.userId == uid() || (resource.data.userId == 'admin' && isAdmin()));
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['id','userId','titleAr','bodyAr','kind','relatedRoute','isRead','createdAt'])
+        && request.resource.data.isRead == false
+        && isStr(request.resource.data.titleAr, 200) && isStr(request.resource.data.bodyAr, 1000);
+      allow update: if signedIn() && (resource.data.userId == uid() || (resource.data.userId == 'admin' && isAdmin()))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+      allow delete: if false;
+    }
+
+    // ---- invitations (guest links are public by slug; lists are private) ----
+    match /invitations/{slug} {
+      allow get: if true;
+      allow list: if isAdmin() || (signedIn() && resource.data.ownerId == uid());
+      allow create: if signedIn() && request.resource.data.ownerId == uid() && request.resource.data.slug == slug;
+      allow update: if false;
+      allow delete: if isAdmin() || (signedIn() && resource.data.ownerId == uid());
+
+      match /rsvps/{rid} {
+        allow read: if true;
+        allow create: if exists(/databases/$(database)/documents/invitations/$(slug))
+          && request.resource.data.keys().hasOnly(['id','invitationId','guestName','guestPhone','response','companionsCount','congratulationMessage','createdAt'])
+          && isStr(request.resource.data.guestName, 120) && request.resource.data.guestName.size() > 0
+          && request.resource.data.response in ['attending','declined']
+          && request.resource.data.companionsCount is int && request.resource.data.companionsCount >= 1 && request.resource.data.companionsCount <= 20
+          && isStr(request.resource.data.congratulationMessage, 500)
+          && request.resource.data.guestPhone == '';
+        allow update: if false;
+        allow delete: if isAdmin() || (signedIn() && get(/databases/$(database)/documents/invitations/$(slug)).data.ownerId == uid());
+      }
+      match /rsvp_private/{rid} {
+        allow read: if isAdmin() || (signedIn() && get(/databases/$(database)/documents/invitations/$(slug)).data.ownerId == uid());
+        allow create: if exists(/databases/$(database)/documents/invitations/$(slug))
+          && request.resource.data.keys().hasOnly(['guestPhone']) && isStr(request.resource.data.guestPhone, 30);
+        allow update: if false;
+        allow delete: if isAdmin() || (signedIn() && get(/databases/$(database)/documents/invitations/$(slug)).data.ownerId == uid());
+      }
+    }
+
+    // ---- couple workspace ----
+    match /workspaces/{userId} {
+      allow read, write: if signedIn() && uid() == userId;
+    }
+
+    // ---- config + audit ----
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /auditLogs/{id} {
+      allow read, create: if isAdmin();
     }
   }
 }

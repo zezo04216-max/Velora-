@@ -1,3 +1,7 @@
+import { clientApiFetch } from './clientApi';
+
+const USE_EXPRESS_API = import.meta.env.VITE_USE_EXPRESS_API === '1';
+
 let authToken: string | null = null;
 
 export function setClientAuthToken(token: string | null): void {
@@ -12,6 +16,9 @@ export async function apiFetch<T = Record<string, unknown>>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
+  if (!USE_EXPRESS_API && path.startsWith('/api/')) {
+    return clientApiFetch<T>(path, options);
+  }
   const headers = new Headers(options.headers || {});
   if (!headers.has('Content-Type') && options.body && typeof options.body === 'string') {
     headers.set('Content-Type', 'application/json');
