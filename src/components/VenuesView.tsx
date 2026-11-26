@@ -71,6 +71,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
   const [venueCapMin, setVenueCapMin] = useState('120');
   const [venueCapMax, setVenueCapMax] = useState('400');
   const [venueDesc, setVenueDesc] = useState('');
+  const [venuePubPhone, setvenuePubPhone] = useState('');
   const [venueCover, setVenueCover] = useState(
     '/src/assets/images/velora_venue_palace_1795424759214.jpg'
   );
@@ -170,12 +171,14 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
           capacityMin: Number(venueCapMin) || 100,
           capacityMax: Number(venueCapMax) || 350,
           descriptionAr: venueDesc,
+          contactPhone: venuePubPhone.trim(),
           coverImage: venueCover,
           galleryImages: [venueCover],
         }),
       });
       setVenueTitle('');
       setVenueDesc('');
+      setvenuePubPhone('');
       setShowAddVenueModal(false);
       setVenueFeedback(
         user?.role === 'admin'
@@ -709,7 +712,6 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
                     <span className="font-semibold text-[#5B3278] tabular-nums">{formatEgp(req.budgetEgp)}</span>
                   </div>
                 </div>
-                <ContactRow phone={req.clientPhone} subject={req.titleAr} />
               </motion.div>
             ))}
           </div>
@@ -814,6 +816,18 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
                   placeholder="اكتب مواصفات القاعة، الجناح الخاص، نظام الإضاءة والضيافة..."
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#E8DCF3] bg-[#FAF7FD] text-sm"
                 />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-[#5E4D6B] mb-1">رقم للتواصل العام (اختياري)</label>
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  value={venuePubPhone}
+                  onChange={(e) => setvenuePubPhone(e.target.value)}
+                  placeholder="اتركه فارغًا إن لم ترغب في إظهار رقمك"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E8DCF3] bg-[#FAF7FD] text-sm"
+                />
+                <p className="mt-1 text-[11px] text-[#6B5A78]">إذا أضفت رقمًا سيظهر لكل زوار الموقع على إعلانك. لن نعرضه إلا بموافقتك هنا.</p>
               </div>
               <div className="sm:col-span-2 flex items-center justify-between gap-3 pt-1">
                 <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F3ECF9] text-[#5B3278] text-xs font-bold cursor-pointer">

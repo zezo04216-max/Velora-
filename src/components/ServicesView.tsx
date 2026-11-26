@@ -72,6 +72,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
   const [srvArea, setSrvArea] = useState('المعادي');
   const [srvPrice, setSrvPrice] = useState('12000');
   const [srvDesc, setSrvDesc] = useState('');
+  const [srvPubPhone, setsrvPubPhone] = useState('');
   const [srvCover, setSrvCover] = useState(
     '/src/assets/images/velora_service_floral_kosha_1795424758988.jpg'
   );
@@ -152,12 +153,14 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
           area: srvArea || srvCity,
           startingPrice: Number(srvPrice) || 8000,
           descriptionAr: srvDesc,
+          contactPhone: srvPubPhone.trim(),
           coverImage: srvCover,
           galleryImages: [srvCover],
         }),
       });
       setSrvTitle('');
       setSrvDesc('');
+      setsrvPubPhone('');
       setShowAddServiceModal(false);
       setSrvFeedback(
         user?.role === 'admin'
@@ -701,7 +704,6 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                   <span>{r.city}</span>
                   <span className="font-bold text-[#5B3278] tabular-nums">{formatEgp(r.budgetEgp)}</span>
                 </div>
-                <ContactRow phone={r.clientPhone} subject={r.titleAr} />
               </motion.div>
             ))}
             {requests.length === 0 && (
@@ -912,6 +914,18 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                   placeholder="اكتب مواصفات الخدمة وما تشمله الباقة..."
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#E8DCF3] bg-[#FAF7FD] text-sm"
                 />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-[#5E4D6B] mb-1">رقم للتواصل العام (اختياري)</label>
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  value={srvPubPhone}
+                  onChange={(e) => setsrvPubPhone(e.target.value)}
+                  placeholder="اتركه فارغًا إن لم ترغب في إظهار رقمك"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E8DCF3] bg-[#FAF7FD] text-sm"
+                />
+                <p className="mt-1 text-[11px] text-[#6B5A78]">إذا أضفت رقمًا سيظهر لكل زوار الموقع على إعلانك. لن نعرضه إلا بموافقتك هنا.</p>
               </div>
               <div className="sm:col-span-2 flex items-center justify-between gap-3 pt-1">
                 <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F3ECF9] text-[#5B3278] text-xs font-bold cursor-pointer">

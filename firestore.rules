@@ -69,6 +69,12 @@ service cloud.firestore {
         || (signedIn() && hasProfile() && profile().role in ['venue_owner','photographer','service_provider']);
       allow create: if signedIn() && request.resource.data.clientId == uid() && request.resource.data.status == 'open';
       allow update, delete: if isAdmin();
+      match /private/{docId} {
+        allow read: if isAdmin() || (signedIn() && resource.data.clientId == uid());
+        allow create: if signedIn() && request.resource.data.clientId == uid()
+          && get(/databases/$(database)/documents/requests/$(id)).data.clientId == uid();
+        allow update, delete: if isAdmin();
+      }
     }
 
     // ---- bookings ----

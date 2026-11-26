@@ -531,7 +531,7 @@ route('POST', '/api/venues', async ({ body: b }) => {
     coverImage: cover,
     galleryImages: strArr(b.galleryImages, [cover]),
     videoUrl: str(b.videoUrl),
-    contactPhone: str(b.contactPhone, user.phone || ''),
+    contactPhone: str(b.contactPhone),
     status: user.role === 'admin' ? 'approved' : 'pending',
     featured: false,
     avgRating: 0,
@@ -596,7 +596,7 @@ route('POST', '/api/photographers', async ({ body: b }) => {
         photos: strArr(b.albumPhotos, [cover]),
       },
     ],
-    contactPhone: str(b.contactPhone, user.phone || ''),
+    contactPhone: str(b.contactPhone),
     status: user.role === 'admin' ? 'approved' : 'pending',
     featured: false,
     avgRating: 0,
@@ -673,7 +673,7 @@ route('POST', '/api/services', async ({ body: b }) => {
     coverImage: cover,
     galleryImages: strArr(b.galleryImages, [cover]),
     videoUrl: str(b.videoUrl),
-    contactPhone: str(b.contactPhone, user.phone || ''),
+    contactPhone: str(b.contactPhone),
     status: user.role === 'admin' ? 'approved' : 'pending',
     featured: false,
     avgRating: 0,
@@ -715,7 +715,7 @@ route('POST', '/api/requests', async ({ body: b }) => {
     id,
     clientId: user.id,
     clientName: user.name,
-    clientPhone: user.phone || user.email,
+    clientPhone: '',
     requestSection: section,
     serviceCategory: b.serviceCategory ? (str(b.serviceCategory) as ServiceCategoryKey) : undefined,
     titleAr: str(b.titleAr),
@@ -731,6 +731,8 @@ route('POST', '/api/requests', async ({ body: b }) => {
     createdAt: nowIso(),
   });
   await setDoc(doc(d, 'requests', id), rec);
+  // Contact number lives in a private sub-document: only the requester and admin can read it.
+  await setDoc(doc(d, 'requests', id, 'private', 'contact'), { clientId: user.id, phone: user.phone || '' });
   await notifyAdmins({
     titleAr: 'طلب عميل جديد',
     bodyAr: `أضاف "${user.name}" طلبًا جديدًا في قسم ${section === 'venue' ? 'القاعات' : section === 'photographer' ? 'المصورين' : 'الخدمات'}.`,
@@ -1137,7 +1139,7 @@ route('POST', '/api/invitations', async ({ body: b }) => {
       'بقلوب يغمرها الفرح، نتشرف بدعوتكم لحضور حفل زفافنا ومشاركتنا أجمل لحظات العمر.'
     ),
     couplePhoto: str(b.couplePhoto, '/src/assets/images/velora_invitation_editorial_1795424758769.jpg'),
-    contactPhone: str(b.contactPhone, user.phone || ''),
+    contactPhone: str(b.contactPhone),
     createdAt: nowIso(),
   });
   await setDoc(doc(d, 'invitations', slug), rec);
