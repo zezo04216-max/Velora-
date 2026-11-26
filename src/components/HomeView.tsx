@@ -17,6 +17,7 @@ import {
   Sparkles,
   Star,
 } from 'lucide-react';
+import { Compass as ToolCompass, Gift as ToolGift, Heart as ToolHeart, Mail as ToolMail } from 'lucide-react';
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react';
 import type {
   PhotographerRecord,
@@ -417,6 +418,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <p className="text-xs text-[#6B5A78]">فحص تواريخ ذكي</p>
               </div>
             </motion.div>
+
+            <div className="grid grid-cols-4 gap-2 max-w-md" aria-label="أدوات إضافية">
+              {[
+                { route: 'invitations' as VeloraRoute, label: 'الدعوات', Icon: ToolMail },
+                { route: 'find_wedding' as VeloraRoute, label: 'اعثر على فرحك', Icon: ToolCompass },
+                { route: 'workspace' as VeloraRoute, label: 'مساحة فرحنا', Icon: ToolHeart },
+                { route: 'packages' as VeloraRoute, label: 'الباقات', Icon: ToolGift },
+              ].map(({ route, label, Icon }) => (
+                <button
+                  key={route}
+                  type="button"
+                  onClick={() => onNavigate(route)}
+                  className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#E8DCF3] bg-white px-1 py-3 text-[11px] font-semibold text-[#5B3278] hover:bg-[#F3ECF9] transition-colors"
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="leading-tight text-center">{label}</span>
+                </button>
+              ))}
+            </div>
           </motion.div>
 
           {/* Editorial Photo Collage with Scroll Fragment & Reassembly */}

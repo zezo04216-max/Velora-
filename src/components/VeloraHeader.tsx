@@ -50,7 +50,7 @@ const NAV_ITEMS: Array<{
   { id: 'venues', label: 'القاعات', mobileShow: true, icon: Building2 },
   { id: 'photographers', label: 'المصورين', mobileShow: true, icon: Camera },
   { id: 'services', label: 'الخدمات', mobileShow: true, icon: Sparkles },
-  { id: 'invitations', label: 'الدعوات', mobileShow: true, icon: Mail },
+  { id: 'invitations', label: 'الدعوات', mobileShow: false, icon: Mail },
   { id: 'bookings', label: 'حجوزاتي', mobileShow: true, icon: CalendarCheck2 },
 ];
 
@@ -196,7 +196,7 @@ export const VeloraHeader: React.FC<VeloraHeaderProps> = ({
         className="lg:hidden fixed bottom-0 inset-x-0 z-40 velora-glass border-t border-[#E8DCF3] px-2 py-1"
         aria-label="التنقل السفلي"
       >
-        <div className="grid grid-cols-6 gap-0.5 max-w-lg mx-auto">
+        <div className="grid grid-cols-5 gap-0.5 max-w-lg mx-auto">
           {NAV_ITEMS.filter((item) => item.mobileShow !== false).map((item) => {
             const Icon = item.icon;
             const active = isActive(item.id);

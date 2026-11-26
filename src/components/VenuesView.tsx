@@ -1,3 +1,4 @@
+import { ContactRow } from './ContactRow';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Building2,
@@ -533,6 +534,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
                       عرض القاعة والحجز
                     </button>
                   </div>
+                  <ContactRow phone={venue.contactPhone} subject={venue.titleAr} className="px-5 pb-4" />
                 </motion.article>
               );
             })}
@@ -707,6 +709,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
                     <span className="font-semibold text-[#5B3278] tabular-nums">{formatEgp(req.budgetEgp)}</span>
                   </div>
                 </div>
+                <ContactRow phone={req.clientPhone} subject={req.titleAr} />
               </motion.div>
             ))}
           </div>

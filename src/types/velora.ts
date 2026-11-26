@@ -81,6 +81,8 @@ export interface VenueRecord {
   coverImage: string;
   galleryImages: string[];
   videoUrl: string;
+  /** Phone the owner saved on their profile when posting; used for the contact button. */
+  contactPhone?: string;
   status: ApprovalStatus;
   featured: boolean;
   avgRating: number;
@@ -119,6 +121,8 @@ export interface PhotographerRecord {
   coverImage: string;
   videoReelUrl: string;
   albums: PhotographerAlbum[];
+  /** Phone the owner saved on their profile when posting; used for the contact button. */
+  contactPhone?: string;
   status: ApprovalStatus;
   featured: boolean;
   avgRating: number;
@@ -145,6 +149,8 @@ export interface ServiceRecord {
   coverImage: string;
   galleryImages: string[];
   videoUrl: string;
+  /** Phone the owner saved on their profile when posting; used for the contact button. */
+  contactPhone?: string;
   status: ApprovalStatus;
   featured: boolean;
   avgRating: number;

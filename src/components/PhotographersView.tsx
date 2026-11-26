@@ -1,3 +1,4 @@
+import { ContactRow } from './ContactRow';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Camera,
@@ -529,6 +530,7 @@ export const PhotographersView: React.FC<PhotographersViewProps> = ({
                       الألبومات والحجز
                     </button>
                   </div>
+                  <ContactRow phone={p.contactPhone} subject={p.displayName} className="px-5 pb-4" />
                 </motion.article>
               );
             })}
@@ -672,6 +674,7 @@ export const PhotographersView: React.FC<PhotographersViewProps> = ({
                     الميزانية: {formatEgp(req.budgetEgp)}
                   </span>
                 </div>
+                <ContactRow phone={req.clientPhone} subject={req.titleAr} />
               </motion.div>
             ))}
           </div>

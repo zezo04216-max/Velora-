@@ -1,3 +1,4 @@
+import { ContactRow } from './ContactRow';
 import React, { useMemo, useState } from 'react';
 import {
   CalendarCheck2,
@@ -544,6 +545,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                         التفاصيل والحجز
                       </button>
                     </div>
+                    <ContactRow phone={srv.contactPhone} subject={srv.titleAr} className="px-5 pb-4" />
                   </motion.article>
                 );
               })}
@@ -699,6 +701,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                   <span>{r.city}</span>
                   <span className="font-bold text-[#5B3278] tabular-nums">{formatEgp(r.budgetEgp)}</span>
                 </div>
+                <ContactRow phone={r.clientPhone} subject={r.titleAr} />
               </motion.div>
             ))}
             {requests.length === 0 && (
