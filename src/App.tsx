@@ -1,29 +1,29 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { MotionConfig } from 'motion/react';
-import { AdminDashboardView } from './components/AdminDashboardView';
-import { AuthAndProfileView } from './components/AuthAndProfileView';
-import { BookingsView } from './components/BookingsView';
+const AdminDashboardView = lazy(() => import('./components/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView })));
+const AuthAndProfileView = lazy(() => import('./components/AuthAndProfileView').then((m) => ({ default: m.AuthAndProfileView })));
+const BookingsView = lazy(() => import('./components/BookingsView').then((m) => ({ default: m.BookingsView })));
 import {
   CinematicPageTransition,
   ScrollProgressRibbon,
 } from './components/CinematicMotion';
 import { CoupleWorkspaceView, type WorkspaceTab } from './components/CoupleWorkspaceView';
 import { FallingPetalsOverlay } from './components/FallingPetalsOverlay';
-import { FindWeddingView } from './components/FindWeddingView';
+const FindWeddingView = lazy(() => import('./components/FindWeddingView').then((m) => ({ default: m.FindWeddingView })));
 import { HomeView } from './components/HomeView';
-import { InvitationsView } from './components/InvitationsView';
+const InvitationsView = lazy(() => import('./components/InvitationsView').then((m) => ({ default: m.InvitationsView })));
 import { NotFoundView } from './components/NotFoundView';
 import { NotificationsDrawer } from './components/NotificationsDrawer';
-import { PackagesView } from './components/PackagesView';
-import { PhotographerDetailView } from './components/PhotographerDetailView';
-import { PhotographersView } from './components/PhotographersView';
-import { ServicesView } from './components/ServicesView';
-import { StandaloneInvitationView } from './components/StandaloneInvitationView';
+const PackagesView = lazy(() => import('./components/PackagesView').then((m) => ({ default: m.PackagesView })));
+const PhotographerDetailView = lazy(() => import('./components/PhotographerDetailView').then((m) => ({ default: m.PhotographerDetailView })));
+const PhotographersView = lazy(() => import('./components/PhotographersView').then((m) => ({ default: m.PhotographersView })));
+const ServicesView = lazy(() => import('./components/ServicesView').then((m) => ({ default: m.ServicesView })));
+const StandaloneInvitationView = lazy(() => import('./components/StandaloneInvitationView').then((m) => ({ default: m.StandaloneInvitationView })));
 import { VeloraCinematicSplash } from './components/VeloraCinematicSplash';
 import { VeloraHeader, type VeloraRoute } from './components/VeloraHeader';
 import { VeloraWelcomeModal } from './components/VeloraWelcomeModal';
-import { VenueDetailView } from './components/VenueDetailView';
-import { VenuesView } from './components/VenuesView';
+const VenueDetailView = lazy(() => import('./components/VenueDetailView').then((m) => ({ default: m.VenueDetailView })));
+const VenuesView = lazy(() => import('./components/VenuesView').then((m) => ({ default: m.VenuesView })));
 import { OfflineIndicator } from './hooks/usePWAInstall';
 import type {
   BookingRecord,
@@ -55,15 +55,69 @@ function getInviteSlugFromUrl(): string | null {
   return slug && slug.trim() ? slug.trim() : null;
 }
 
+const ROUTE_PATHS: Partial<Record<VeloraRoute, string>> = {
+  home: '/',
+  find_wedding: '/find-your-wedding',
+  workspace: '/workspace',
+  packages: '/packages',
+  venues: '/venues',
+  photographers: '/photographers',
+  services: '/services',
+  invitations: '/invitations',
+  bookings: '/bookings',
+  profile: '/profile',
+  auth: '/login',
+  admin: '/admin',
+};
+
+const ROUTE_TITLES: Record<VeloraRoute, string> = {
+  home: 'VÉLORA — كل تفاصيل فرحتك تبدأ من هنا',
+  find_wedding: 'اعثر على فرحك | VÉLORA',
+  workspace: 'مساحة فرحنا | VÉLORA',
+  packages: 'الباقات | VÉLORA',
+  venues: 'القاعات | VÉLORA',
+  venue_detail: 'تفاصيل القاعة | VÉLORA',
+  photographers: 'المصورون | VÉLORA',
+  photographer_detail: 'تفاصيل المصور | VÉLORA',
+  services: 'الخدمات | VÉLORA',
+  invitations: 'الدعوات الإلكترونية | VÉLORA',
+  bookings: 'حجوزاتي | VÉLORA',
+  profile: 'حسابي | VÉLORA',
+  auth: 'تسجيل الدخول | VÉLORA',
+  admin: 'لوحة الإدارة | VÉLORA',
+  not_found: 'الصفحة غير موجودة | VÉLORA',
+};
+
+function pathForRoute(route: VeloraRoute, venueId: string, photographerId: string): string {
+  if (route === 'venue_detail') return venueId ? `/venues/${encodeURIComponent(venueId)}` : '/venues';
+  if (route === 'photographer_detail')
+    return photographerId ? `/photographers/${encodeURIComponent(photographerId)}` : '/photographers';
+  if (route === 'not_found') return window.location.pathname;
+  return ROUTE_PATHS[route] || '/';
+}
+
+function parsePath(pathname: string): { route: VeloraRoute; venueId: string; photographerId: string } {
+  const clean = pathname.replace(/\/+$/, '') || '/';
+  const parts = clean.split('/').filter(Boolean);
+  if (parts[0] === 'venues' && parts[1])
+    return { route: 'venue_detail', venueId: decodeURIComponent(parts[1]), photographerId: '' };
+  if (parts[0] === 'photographers' && parts[1])
+    return { route: 'photographer_detail', venueId: '', photographerId: decodeURIComponent(parts[1]) };
+  const hit = (Object.keys(ROUTE_PATHS) as VeloraRoute[]).find((r) => ROUTE_PATHS[r] === clean);
+  if (hit) return { route: hit, venueId: '', photographerId: '' };
+  return { route: 'not_found', venueId: '', photographerId: '' };
+}
+
 export default function App() {
   // External shared guest link (?invite=<slug>) — guests CANNOT navigate back to the platform
   const [guestInviteSlug, setGuestInviteSlug] = useState<string | null>(() => getInviteSlugFromUrl());
   // Internal host preview from Studio / Home — lets the host close the envelope preview back to app
   const [internalPreviewSlug, setInternalPreviewSlug] = useState<string | null>(null);
-  const [route, setRoute] = useState<VeloraRoute>('home');
+  const initialPath = typeof window !== 'undefined' ? parsePath(window.location.pathname) : null;
+  const [route, setRoute] = useState<VeloraRoute>(initialPath?.route || 'home');
   const [preferredRegisterRole, setPreferredRegisterRole] = useState<UserRole | null>(null);
-  const [selectedVenueId, setSelectedVenueId] = useState<string>('');
-  const [selectedPhotographerId, setSelectedPhotographerId] = useState<string>('');
+  const [selectedVenueId, setSelectedVenueId] = useState<string>(initialPath?.venueId || '');
+  const [selectedPhotographerId, setSelectedPhotographerId] = useState<string>(initialPath?.photographerId || '');
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [venues, setVenues] = useState<VenueRecord[]>([]);
@@ -148,6 +202,26 @@ export default function App() {
       })
       .catch(() => {});
   }, [loadPublicCatalog, loadUserScopedData]);
+
+  // Keep the address bar and page title in sync with the current page
+  useEffect(() => {
+    const next = pathForRoute(route, selectedVenueId, selectedPhotographerId);
+    if (window.location.pathname !== next && !guestInviteSlug) {
+      window.history.pushState({}, '', next + window.location.search);
+    }
+    if (!guestInviteSlug) document.title = ROUTE_TITLES[route];
+  }, [route, selectedVenueId, selectedPhotographerId, guestInviteSlug]);
+
+  useEffect(() => {
+    const onPath = () => {
+      const p = parsePath(window.location.pathname);
+      setRoute(p.route);
+      setSelectedVenueId(p.venueId);
+      setSelectedPhotographerId(p.photographerId);
+    };
+    window.addEventListener('popstate', onPath);
+    return () => window.removeEventListener('popstate', onPath);
+  }, []);
 
   const dismissCinematicSplash = useCallback(() => {
     setShowCinematicSplash(false);
@@ -350,6 +424,7 @@ export default function App() {
         <ScrollProgressRibbon />
 
         <main className="overflow-x-clip">
+          <Suspense fallback={<div className="min-h-[60vh]" />}>
           <CinematicPageTransition routeKey={routeKey}>
         {route === 'home' && (
           <HomeView
@@ -569,6 +644,7 @@ export default function App() {
 
           {route === 'not_found' && <NotFoundView onGoHome={() => navigate('home')} />}
           </CinematicPageTransition>
+          </Suspense>
         </main>
 
         <NotificationsDrawer
