@@ -36,38 +36,42 @@ HALLS = ['قاعة ليالي الياسمين', 'قاعة نجمة الزمان
 PHOTOS = ['استوديو لقطة حلم', 'عدسة الحكاية', 'استوديو ضوء ولون', 'ذكريات بالعدسة', 'استوديو لحظة وردية', 'فريق إطار ذهبي', 'استوديو نبض الصورة', 'عدسة الليالي',
           'استوديو ظل وضوء', 'فريق لقطات الزمن', 'استوديو سحر الكادر', 'عدسة الفرحة', 'استوديو بصمة', 'فريق وميض', 'استوديو صدى اللحظة', 'عدسة الأصيل',
           'استوديو رحلة الحب', 'فريق كادر أبيض', 'استوديو لمسة نور', 'عدسة أحلى يوم']
-SERVS = [('kosha', 'كوشة الأحلام البيضاء (نموذج تجريبي)'), ('flowers', 'تنسيق ورد بيت الربيع (نموذج تجريبي)'), ('music', 'فرقة زفة النيل (نموذج تجريبي)'),
+SERVS = [('kosha', 'كوشة الأحلام البيضاء (نموذج تجريبي)'), ('flowers', 'تنسيق ورد بيت الربيع (نموذج تجريبي)'), ('decor', 'ديكور وإضاءة ليالي الفرح (نموذج تجريبي)'),
          ('makeup', 'ميك أب لمسة جمال (نموذج تجريبي)'), ('cars', 'سيارات الزفاف الكلاسيك (نموذج تجريبي)'), ('catering', 'بوفيه وحلويات الفرح (نموذج تجريبي)')]
 COMMON = {'ownerId': 'demo-owner', 'isDemo': True, 'status': 'approved', 'featured': False, 'avgRating': 0, 'reviewsCount': 0,
           'createdAt': '2026-11-27T06:00:00.000Z', 'contactPhone': ''}
 random.seed(7)
+MAN = json.load(open(__file__.rsplit('/', 1)[0] + '/demo_images.json'))
+def credit(m):
+    return f" الصورة: {m['author'] or 'مجهول'} ({m['license']}) عبر Wikimedia Commons."
+
 
 def put(col, id_, rec):
     req('PATCH', f'{BASE}/{col}/{id_}', {'fields': {k: enc(v) for k, v in rec.items()}})
 
 def seed():
     for i, name in enumerate(HALLS):
-        city, area = PLACES[i]; img = VENUE_IMGS[i % 3]; cmin = random.choice([100, 150, 200, 250]); id_ = f'demo-venue-{i+1:02d}'
+        city, area = PLACES[i]; m = MAN['hall'][i]; img = m['file']; cmin = random.choice([100, 150, 200, 250]); id_ = f'demo-venue-{i+1:02d}'
         put('venues', id_, {**COMMON, 'id': id_, 'ownerName': 'نموذج تجريبي', 'titleAr': name + ' (نموذج تجريبي)', 'subtitleAr': 'قاعة أفراح - إعلان تجريبي',
             'city': city, 'area': area, 'address': 'عنوان تجريبي', 'mapUrl': '', 'capacityMin': cmin, 'capacityMax': cmin + random.choice([200, 300, 450]),
             'pricePerEvent': random.randrange(30000, 160000, 5000), 'discountPercent': random.choice([0, 0, 5, 10]), 'workingHours': '6:00 م - 2:00 ص',
             'decorStyles': ['كلاسيك', 'مودرن'], 'features': ['جناح للعروسين', 'إضاءة وساوند', 'موقف سيارات'],
-            'descriptionAr': f'قاعة أفراح تجريبية في {area} - {city}. هذا إعلان وهمي لعرض شكل الموقع وليس قاعة حقيقية.',
+            'descriptionAr': f'قاعة أفراح تجريبية في {area} - {city}. هذا إعلان وهمي لعرض شكل الموقع وليس قاعة حقيقية.' + credit(m),
             'coverImage': img, 'galleryImages': [img], 'videoUrl': ''})
     for i, name in enumerate(PHOTOS):
-        city, area = PLACES[(i * 3 + 1) % len(PLACES)]; img = PHOTO_IMGS[i % 3]; id_ = f'demo-photographer-{i+1:02d}'
+        city, area = PLACES[(i * 3 + 1) % len(PLACES)]; m = MAN['photo'][i]; img = m['file']; id_ = f'demo-photographer-{i+1:02d}'
         put('photographers', id_, {**COMMON, 'id': id_, 'displayName': name + ' (نموذج تجريبي)', 'specialtyAr': random.choice(['تصوير أفراح سينمائي', 'تصوير خطوبة وسيشن', 'فيديو وتصوير فوتوغرافي']),
             'city': city, 'studioLocation': area, 'yearsExperience': random.randint(2, 12), 'workingHours': '11:00 ص - 10:00 م',
             'startingPrice': random.randrange(5000, 30000, 1000), 'discountPercent': random.choice([0, 0, 10]),
-            'bioAr': f'مصور تجريبي في {area} - {city}. إعلان وهمي لعرض شكل الموقع فقط.', 'equipmentAr': 'كاميرات احترافية وعدسات متنوعة',
+            'bioAr': f'مصور تجريبي في {area} - {city}. إعلان وهمي لعرض شكل الموقع فقط.' + credit(m), 'equipmentAr': 'كاميرات احترافية وعدسات متنوعة',
             'shootingTypes': ['فوتو سيشن', 'تغطية الحفل'], 'avatarUrl': img, 'coverImage': img, 'videoReelUrl': '',
             'albums': [{'id': f'demo-album-{i+1:02d}', 'photographerId': id_, 'titleAr': 'أعمال تجريبية', 'descriptionAr': 'صور توضيحية للعرض فقط',
                         'sessionDate': '2026-10-01', 'locationAr': city, 'photos': [img]}]})
     for i, (cat, name) in enumerate(SERVS):
-        city, area = PLACES[(i * 2) % len(PLACES)]; img = SERV_IMGS[i % 2]; id_ = f'demo-service-{i+1:02d}'
+        city, area = PLACES[(i * 2) % len(PLACES)]; m = MAN['serv'][i]; img = m['file']; id_ = f'demo-service-{i+1:02d}'
         put('services', id_, {**COMMON, 'id': id_, 'providerName': 'نموذج تجريبي', 'category': cat, 'titleAr': name, 'city': city, 'area': area,
             'startingPrice': random.randrange(3000, 25000, 500), 'discountPercent': 0, 'workingHours': '10:00 ص - 9:00 م',
-            'descriptionAr': 'خدمة تجريبية لعرض شكل الموقع، وليست مقدم خدمة حقيقي.', 'packagesAr': ['باقة أساسية'], 'coverImage': img, 'galleryImages': [img], 'videoUrl': ''})
+            'descriptionAr': 'خدمة تجريبية لعرض شكل الموقع، وليست مقدم خدمة حقيقي.' + credit(m), 'packagesAr': ['باقة أساسية'], 'coverImage': img, 'galleryImages': [img], 'videoUrl': ''})
     print('seeded', len(HALLS), len(PHOTOS), len(SERVS))
 
 def delete():

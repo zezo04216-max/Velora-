@@ -1614,7 +1614,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 تسعير كروت الدعوة الإلكترونية (7 قوالب)
               </h2>
               <p className="text-xs text-[#5E4D6B]">
-                ضع سعرًا بالجنيه للكروت المميزة، أو اكتب <strong className="text-[#5B3278]">0</strong> ليصبح الكارت مجانيًا ويحمل شعار واسم موقع <strong className="text-[#5B3278]">VÉLORA</strong> تلقائيًا.
+                اختر لكل كارت «مجاني» أو «مدفوع» ثم حدد السعر بالجنيه واضغط حفظ. الكارت المجاني يحمل شعار واسم موقع <strong className="text-[#5B3278]">VÉLORA</strong> تلقائيًا.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
@@ -1639,11 +1639,30 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                         style={{ background: spec.cardBg }}
                       />
                     </div>
+                    <div className="grid grid-cols-2 gap-1 rounded-xl bg-white p-1 border border-[#E8DCF3]" role="group" aria-label="نوع الكارت">
+                      <button
+                        type="button"
+                        onClick={() => setInvitationPrices((prev) => ({ ...prev, [id]: 0 }))}
+                        className={`rounded-lg py-1.5 text-xs font-bold ${isFree ? 'bg-[#5B3278] text-white' : 'text-[#5B3278]'}`}
+                      >
+                        مجاني
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setInvitationPrices((prev) => ({ ...prev, [id]: prev[id] > 0 ? prev[id] : spec.priceEgp > 0 ? spec.priceEgp : 250 }))
+                        }
+                        className={`rounded-lg py-1.5 text-xs font-bold ${!isFree ? 'bg-[#5B3278] text-white' : 'text-[#5B3278]'}`}
+                      >
+                        مدفوع
+                      </button>
+                    </div>
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
                         min={0}
                         value={priceVal}
+                        disabled={isFree}
                         onChange={(e) =>
                           setInvitationPrices((prev) => ({
                             ...prev,

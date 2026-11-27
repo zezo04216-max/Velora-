@@ -60,6 +60,7 @@ export function resolveMediaUrl(pathOrUrl: string | undefined | null, fallback =
   if (VELORA_IMAGE_ASSETS[clean]) return VELORA_IMAGE_ASSETS[clean];
   if (
     clean.startsWith('/assets/') ||
+    clean.startsWith('/demo/') ||
     clean.startsWith('/api/media/uploads/') ||
     clean.startsWith('data:image/') ||
     clean.startsWith('http://') ||
