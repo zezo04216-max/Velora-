@@ -183,6 +183,26 @@ const DecoFan: React.FC<{ color: string }> = ({ color }) => (
   </svg>
 );
 
+
+const DAMASK = `url("data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><g fill="none" stroke="#E8C877" stroke-opacity=".16" stroke-width="1"><path d="M30 5C39 16 39 24 30 30 21 24 21 16 30 5Z"/><path d="M30 55C39 44 39 36 30 30 21 36 21 44 30 55Z"/><path d="M5 30C16 21 24 21 30 30 24 39 16 39 5 30Z"/><path d="M55 30C44 21 36 21 30 30 36 39 44 39 55 30Z"/><circle cx="30" cy="30" r="3"/><circle cx="0" cy="0" r="4"/><circle cx="60" cy="0" r="4"/><circle cx="0" cy="60" r="4"/><circle cx="60" cy="60" r="4"/></g></svg>'
+)}")`;
+
+const PAPER = `url("data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .55  0 0 0 0 .48  0 0 0 0 .4  0 0 0 .22 0"/></filter><rect width="200" height="200" filter="url(#n)"/></svg>'
+)}")`;
+
+const LineSprig: React.FC<{ color: string; small?: boolean }> = ({ color, small }) => (
+  <svg viewBox="0 0 160 60" width={small ? 110 : 150} height={small ? 41 : 56} fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" aria-hidden="true">
+    <path d="M10 30 H64 M96 30 H150" strokeOpacity=".5" />
+    <path d="M80 54 C80 40 80 30 80 12" />
+    {[[80,44,-1],[80,36,1],[80,28,-1],[80,20,1]].map(([x,y,d],i)=>(
+      <path key={i} d={`M${x} ${y} C ${x+d*14} ${y-2} ${x+d*18} ${y-12} ${x+d*16} ${y-16} C ${x+d*6} ${y-14} ${x+d*2} ${y-8} ${x} ${y}`} />
+    ))}
+    <circle cx="80" cy="8" r="3" />
+  </svg>
+);
+
 /* ───────────── theme table ───────────── */
 
 interface Theme {
@@ -248,32 +268,32 @@ const THEMES: Record<InvitationDesignId, Theme> = {
     watermarkBg: '#FFFFFF', watermarkText: '#1E3A66',
   },
   luxury: {
-    bg: 'linear-gradient(180deg,#FFFDF8 0%,#F6EEDD 100%)',
-    head: '#2A1838', body: '#6A5A72', accent: '#B8913F', line: 'rgba(184,145,63,.55)',
-    panel: 'rgba(255,255,255,.7)', panelBorder: 'rgba(91,50,120,.25)',
-    nameFont: AMIRI, nameWeight: 700, nameSize: '2.6rem',
-    nameGradient: 'linear-gradient(180deg,#5B3278 0%,#3B1B52 100%)',
+    bg: 'radial-gradient(120% 70% at 50% 0%, #11634E 0%, #0B4235 48%, #06261F 100%)',
+    head: '#FFFFFF', body: '#D3E8DF', accent: '#E8C877', line: 'rgba(232,200,119,.6)',
+    panel: 'rgba(255,255,255,.06)', panelBorder: 'rgba(232,200,119,.45)',
+    nameFont: AMIRI, nameWeight: 700, nameSize: '2.7rem',
+    nameGradient: 'linear-gradient(180deg,#FFF5D2 0%,#E8C877 55%,#B8913F 100%)',
     radius: '22px', photo: 'arch', date: 'strip', cd: 'boxes',
-    eyebrow: 'A LUXURY CELEBRATION', intro: 'يتشرفان بدعوتكم لحضور حفل زفافهما', dark: false,
-    watermarkBg: '#F3ECF9', watermarkText: '#5B3278',
+    eyebrow: 'A LUXURY CELEBRATION', intro: 'يتشرفان بدعوتكم لحضور حفل زفافهما', dark: true,
+    watermarkBg: '#FFFFFF', watermarkText: '#0B4235',
   },
   modern: {
-    bg: '#FFFFFF',
-    head: '#1E1128', body: '#5A4868', accent: '#7B3FA8', line: '#1E1128',
-    panel: '#F5EEFB', panelBorder: 'transparent',
-    nameFont: '"Reem Kufi", "IBM Plex Sans Arabic", sans-serif', nameWeight: 700, nameSize: '2.4rem',
+    bg: '#1B0B3D',
+    head: '#FFFFFF', body: '#E3D8F7', accent: '#FFB3D9', line: 'rgba(255,255,255,.55)',
+    panel: 'rgba(255,255,255,.08)', panelBorder: 'rgba(255,255,255,.35)',
+    nameFont: '"Reem Kufi", "IBM Plex Sans Arabic", sans-serif', nameWeight: 700, nameSize: '2.8rem',
     radius: '0px', photo: 'circle', date: 'big', cd: 'boxes',
-    eyebrow: 'WE ARE GETTING MARRIED', intro: 'نتشرف بدعوتكم لحضور حفل زفافنا', dark: false,
-    watermarkBg: '#F3ECF9', watermarkText: '#5B3278',
+    eyebrow: 'WE ARE GETTING MARRIED', intro: 'نتشرف بدعوتكم لحضور حفل زفافنا', dark: true,
+    watermarkBg: '#FFFFFF', watermarkText: '#3A1C8C',
   },
   minimal: {
-    bg: '#FFFFFF',
-    head: '#24172E', body: '#6B5A78', accent: '#5B3278', line: '#D9CCE4',
-    panel: 'transparent', panelBorder: '#E7DDF0',
-    nameFont: '"IBM Plex Sans Arabic", sans-serif', nameWeight: 300, nameSize: '2.2rem',
-    radius: '4px', photo: 'circle', date: 'plain', cd: 'inline',
+    bg: '#FBF8F2',
+    head: '#2B1B36', body: '#7A6A82', accent: '#6B3A8C', line: 'rgba(107,58,140,.35)',
+    panel: 'transparent', panelBorder: 'rgba(107,58,140,.25)',
+    nameFont: AMIRI, nameWeight: 400, nameSize: '2.7rem',
+    radius: '2px', photo: 'circle', date: 'plain', cd: 'inline',
     eyebrow: 'WEDDING', intro: 'نتشرف بدعوتكم لحضور حفل زفافنا', dark: false,
-    watermarkBg: '#FAF7FD', watermarkText: '#5B3278',
+    watermarkBg: '#FFFFFF', watermarkText: '#6B3A8C',
   },
 };
 
@@ -325,26 +345,33 @@ const Decor: React.FC<{ id: InvitationDesignId }> = ({ id }) => {
   if (id === 'luxury')
     return (
       <>
-        <div className="absolute inset-3 pointer-events-none" style={{ border: '2px solid #5B3278', borderRadius: 18 }} />
-        <div className="absolute inset-[18px] pointer-events-none" style={{ border: '1px solid #B8913F', borderRadius: 13 }} />
-        <div className={`${abs} top-[22px] inset-x-0 flex justify-center`}><DecoFan color="#B8913F" /></div>
-        <div className={`${abs} bottom-[22px] inset-x-0 flex justify-center`} style={{ transform: 'scaleY(-1)' }}><DecoFan color="#B8913F" /></div>
+        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: DAMASK, backgroundSize: '60px 60px', opacity: 0.9 }} />
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(70% 50% at 50% 45%, rgba(6,38,31,.85) 0%, rgba(6,38,31,0) 100%)' }} />
+        <div className="absolute inset-3 pointer-events-none" style={{ border: '2px solid #E8C877', borderRadius: '150px 150px 20px 20px' }} />
+        <div className="absolute inset-[18px] pointer-events-none" style={{ border: '1px solid rgba(232,200,119,.55)', borderRadius: '138px 138px 14px 14px' }} />
+        <div className={`${abs} top-[34px] inset-x-0 flex justify-center`}><DecoFan color="#E8C877" /></div>
+        <div className={`${abs} bottom-[26px] inset-x-0 flex justify-center`} style={{ transform: 'scaleY(-1)' }}><DecoFan color="#E8C877" /></div>
       </>
     );
   if (id === 'modern')
     return (
       <>
-        <div className="absolute top-0 right-0 bottom-0 w-[14px]" style={{ background: 'linear-gradient(180deg,#5B3278,#9B5CC8)' }} />
-        <div className="absolute top-0 left-0 right-[14px] h-[220px]" style={{ background: 'linear-gradient(135deg,#F1E7FA 0%,#FFFFFF 70%)' }} />
-        <div className="absolute -top-14 -left-14 w-32 h-32 rounded-full" style={{ border: "14px solid #5B3278", opacity: 0.9 }} />
-        <div className="absolute bottom-8 -left-6 w-20 h-20 rotate-45" style={{ border: '2px solid #5B3278', opacity: 0.35 }} />
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(70% 38% at 10% 6%, rgba(255,92,170,.85) 0%, transparent 70%), radial-gradient(75% 45% at 100% 30%, rgba(123,63,224,.9) 0%, transparent 70%), radial-gradient(90% 50% at 0% 95%, rgba(58,28,140,1) 0%, transparent 72%), radial-gradient(60% 30% at 90% 100%, rgba(255,92,170,.45) 0%, transparent 70%)' }} />
+        <div className="absolute pointer-events-none rounded-full" style={{ width: 300, height: 300, top: -120, left: -110, border: '1.5px solid rgba(255,255,255,.45)' }} />
+        <div className="absolute pointer-events-none rounded-full" style={{ width: 210, height: 210, top: -70, left: -60, border: '1.5px solid rgba(255,255,255,.3)' }} />
+        <div className="absolute pointer-events-none rounded-full" style={{ width: 150, height: 150, bottom: 70, right: -60, background: 'linear-gradient(135deg,#FFB3D9,#7B3FE0)', opacity: 0.85 }} />
+        <div className="absolute pointer-events-none" style={{ width: 120, height: 120, bottom: 150, left: -40, border: '1.5px solid rgba(255,255,255,.4)', transform: 'rotate(45deg)' }} />
+        <div className="absolute pointer-events-none" style={{ inset: 0, backgroundImage: 'radial-gradient(rgba(255,255,255,.18) 1px, transparent 1.4px)', backgroundSize: '22px 22px', WebkitMaskImage: 'linear-gradient(180deg, transparent 40%, #000 100%)', maskImage: 'linear-gradient(180deg, transparent 40%, #000 100%)' }} />
+        <div className="absolute pointer-events-none top-8 bottom-8 right-5 w-px bg-white/35" />
       </>
     );
   return (
     <>
-      <div className="absolute inset-5 pointer-events-none" style={{ border: '1px solid #E7DDF0' }} />
-      <div className="absolute top-0 left-1/2 w-px h-10 bg-[#5B3278]/40" />
-      <div className="absolute bottom-0 left-1/2 w-px h-10 bg-[#5B3278]/40" />
+      <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: PAPER, opacity: 0.55, mixBlendMode: 'multiply' }} />
+      <div className="absolute inset-4 pointer-events-none" style={{ border: '1px solid rgba(107,58,140,.28)' }} />
+      <div className="absolute inset-[22px] pointer-events-none" style={{ border: '1px solid rgba(107,58,140,.12)' }} />
+      <div className={`${abs} top-[34px] inset-x-0 flex justify-center`}><LineSprig color="#6B3A8C" /></div>
+      <div className={`${abs} bottom-[30px] inset-x-0 flex justify-center`} style={{ transform: 'scaleY(-1)' }}><LineSprig color="#6B3A8C" small /></div>
     </>
   );
 };
@@ -447,8 +474,8 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
     if (t.date === 'big')
       return (
         <div className="flex items-stretch gap-4" style={{ direction: 'rtl' }}>
-          <div className="font-bold tabular-nums leading-none" style={{ fontFamily: t.nameFont, fontSize: '5.2rem', color: '#5B3278' }}>{dp.dayNum}</div>
-          <div className="flex flex-col justify-center gap-1 border-r-2 pr-4" style={{ borderColor: '#5B3278' }}>
+          <div className="font-bold tabular-nums leading-none" style={{ fontFamily: t.nameFont, fontSize: '5.6rem', color: '#FFFFFF' }}>{dp.dayNum}</div>
+          <div className="flex flex-col justify-center gap-1 border-r-2 pr-4" style={{ borderColor: t.accent }}>
             <span className="text-lg font-bold">{dp.month} {dp.year}</span>
             <span className="text-sm" style={{ color: t.body }}>{dp.dayName}</span>
             <span className="text-sm font-bold tabular-nums" style={{ color: t.accent }}>{dp.formattedTime}</span>
@@ -497,14 +524,14 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
             key={c.en}
             className="py-2.5 text-center"
             style={{
-              background: isModern ? '#1E1128' : t.dark ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.85)',
-              color: isModern ? '#FFFFFF' : undefined,
-              border: `1px solid ${isModern ? '#1E1128' : t.panelBorder}`,
+              background: t.dark ? 'rgba(255,255,255,.1)' : 'rgba(255,255,255,.85)',
+              border: `1px solid ${t.panelBorder}`,
+              backdropFilter: t.dark ? 'blur(4px)' : undefined,
               borderRadius: isModern ? 0 : 14,
             }}
           >
             <div className="font-display text-2xl font-bold tabular-nums leading-none">{String(c.val).padStart(2, '0')}</div>
-            <div className="text-[10px] mt-1" style={{ color: isModern ? '#D8C3EA' : t.body }}>{c.ar}</div>
+            <div className="text-[10px] mt-1" style={{ color: t.body }}>{c.ar}</div>
           </div>
         ))}
       </div>
@@ -526,13 +553,13 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
     <div
       className={`relative overflow-hidden shadow-2xl ${animate ? 'vcard-open' : ''}`}
       data-anim={animate ? id : undefined}
-      style={{ background: t.bg, color: t.head, borderRadius: isModern ? 8 : id === 'classic' ? 10 : 28 }}
+      style={{ background: t.bg, color: t.head, borderRadius: isModern ? 8 : id === 'classic' ? 10 : id === 'minimal' ? 6 : 28 }}
       data-design={id}
     >
       <Decor id={id} />
       {animate && <Scene id={id} />}
       <div
-        className={`relative z-10 mx-auto max-w-xl px-8 ${id === 'luxury' ? 'pt-24 pb-24' : id === 'romantic' || id === 'floral' ? 'pt-24 pb-24' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
+        className={`relative z-10 mx-auto max-w-xl px-8 ${id === 'luxury' ? 'pt-28 pb-28' : id === 'minimal' ? 'pt-24 pb-24' : id === 'romantic' || id === 'floral' ? 'pt-24 pb-24' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
         style={isModern ? { paddingInlineEnd: '2.5rem' } : undefined}
       >
         {/* header */}
@@ -575,8 +602,8 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
                 className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold border transition-opacity hover:opacity-85"
                 style={{
                   borderColor: t.dark ? 'rgba(255,255,255,.4)' : t.accent,
-                  color: isModern ? '#FFFFFF' : t.dark ? '#FFFFFF' : t.accent,
-                  background: isModern ? '#5B3278' : 'transparent',
+                  color: t.dark ? '#FFFFFF' : t.accent,
+                  background: isModern ? 'rgba(255,255,255,.14)' : 'transparent',
                   borderRadius: isModern ? 0 : 999,
                 }}
               >
