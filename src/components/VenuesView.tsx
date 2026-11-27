@@ -538,6 +538,9 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
                       عرض القاعة والحجز
                     </button>
                   </div>
+                  {(venue as { isDemo?: boolean }).isDemo && (
+                    <span className="mx-5 mb-2 inline-block rounded-full bg-[#F3ECF9] px-2.5 py-1 text-[11px] font-bold text-[#5B3278]">نموذج تجريبي</span>
+                  )}
                   <ShareLink path={`/venues/${venue.id}`} title={venue.titleAr} className="px-5 pb-3" />
                   <ContactRow phone={venue.contactPhone} subject={venue.titleAr} className="px-5 pb-4" />
                 </motion.article>

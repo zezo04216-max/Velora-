@@ -139,8 +139,10 @@ export default function App() {
   const [showCinematicSplash, setShowCinematicSplash] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     if (getInviteSlugFromUrl()) return false;
+    if (window.location.pathname !== '/' && window.location.pathname !== '') return false;
     return !window.sessionStorage.getItem('velora_cinematic_seen');
   });
+  const [authStartTab, setAuthStartTab] = useState<'login' | 'register'>('login');
   const [welcomeUser, setWelcomeUser] = useState<UserProfile | null>(null);
 
   const loadPublicCatalog = useCallback(async () => {
@@ -223,6 +225,10 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPath);
   }, []);
 
+  useEffect(() => {
+    if (user) setShowCinematicSplash(false);
+  }, [user]);
+
   const dismissCinematicSplash = useCallback(() => {
     setShowCinematicSplash(false);
     if (typeof window !== 'undefined') {
@@ -233,8 +239,6 @@ export default function App() {
   const navigate = (nextRoute: VeloraRoute) => {
     if (nextRoute !== 'auth') {
       setPreferredRegisterRole(null);
-    } else if (!user) {
-      setShowCinematicSplash(true);
     }
     setRoute(nextRoute);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -242,9 +246,6 @@ export default function App() {
 
   const openAuthForRole = (role?: UserRole) => {
     setPreferredRegisterRole(role || null);
-    if (!user) {
-      setShowCinematicSplash(true);
-    }
     setRoute('auth');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -627,7 +628,7 @@ export default function App() {
               setSelectedPhotographerId(id);
               navigate('photographer_detail');
             }}
-            onReplayCinematic={() => setShowCinematicSplash(true)}
+            initialTab={authStartTab}
           />
         )}
 
@@ -655,7 +656,19 @@ export default function App() {
         />
 
         {showCinematicSplash && (
-          <VeloraCinematicSplash onComplete={dismissCinematicSplash} />
+          <VeloraCinematicSplash
+            onLogin={() => {
+              setAuthStartTab('login');
+              dismissCinematicSplash();
+              openAuthForRole();
+            }}
+            onRegister={() => {
+              setAuthStartTab('register');
+              dismissCinematicSplash();
+              openAuthForRole();
+            }}
+            onBrowse={dismissCinematicSplash}
+          />
         )}
 
         {welcomeUser && (

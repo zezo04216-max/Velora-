@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import heroWeddingImg from '../assets/images/velora_hero_wedding_1795424759489.jpg';
 import {
   Heart,
   KeyRound,
@@ -45,7 +46,7 @@ interface AuthAndProfileViewProps {
   onProviderSubmissionDone: () => void;
   onOpenVenue: (id: string) => void;
   onOpenPhotographer: (id: string) => void;
-  onReplayCinematic?: () => void;
+  initialTab?: 'login' | 'register';
 }
 
 export const AuthAndProfileView: React.FC<AuthAndProfileViewProps> = ({
@@ -63,11 +64,11 @@ export const AuthAndProfileView: React.FC<AuthAndProfileViewProps> = ({
   onProviderSubmissionDone,
   onOpenVenue,
   onOpenPhotographer,
-  onReplayCinematic,
+  initialTab,
 }) => {
   // Auth Tabs
   const [authTab, setAuthTab] = useState<'login' | 'register' | 'reset'>(
-    initialRegisterRole && initialRegisterRole !== 'client' ? 'register' : 'login'
+    initialTab === 'register' || (initialRegisterRole && initialRegisterRole !== 'client') ? 'register' : 'login'
   );
   const [contact, setContact] = useState('');
   const [password, setPassword] = useState('');
@@ -255,41 +256,21 @@ export const AuthAndProfileView: React.FC<AuthAndProfileViewProps> = ({
   if (!user || mode === 'auth') {
     return (
       <div className="max-w-lg mx-auto px-4 py-8 pb-24 space-y-5">
-        {/* Cinematic Pre-Login Brand Reveal Banner */}
-        <div
-          className="relative overflow-hidden rounded-3xl p-6 text-center text-white shadow-xl shadow-[#5B3278]/20 border border-[#C5A25D]/40"
-          style={{
-            background: 'radial-gradient(circle at 50% 35%, #6A3B8E 0%, #482461 62%, #29123B 100%)',
-          }}
-        >
+        {/* Cinematic login header */}
+        <div className="relative overflow-hidden rounded-3xl text-center text-white shadow-xl shadow-[#5B3278]/25 min-h-[220px] flex items-end">
+          <img src={heroWeddingImg} alt="" className="absolute inset-0 h-full w-full object-cover" />
           <div
             aria-hidden="true"
-            className="animate-envelope-glow pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-2xl opacity-65"
-            style={{
-              background: 'radial-gradient(circle, rgba(226,198,139,0.4) 0%, transparent 70%)',
-            }}
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(180deg, rgba(53,22,77,0.35) 0%, rgba(40,14,60,0.92) 100%)' }}
           />
-          <div className="relative z-10 flex flex-col items-center space-y-2.5">
-            <span className="text-[10px] font-semibold tracking-[0.26em] uppercase text-[#EAD4A0]">
+          <div className="relative z-10 w-full flex flex-col items-center space-y-2 px-6 pb-6 pt-16">
+            <span className="text-[10px] font-semibold tracking-[0.28em] uppercase text-[#E8DCF3]">
               THE LUXURY WEDDING PLATFORM
             </span>
-            <p className="animate-cinematic-word font-editorial text-4xl sm:text-5xl font-bold tracking-[0.22em] text-white">
-              VÉLORA
-            </p>
-            <div className="animate-line-expand w-36 h-px bg-gradient-to-r from-transparent via-[#E2C68B] to-transparent" />
-            <p className="font-display text-sm sm:text-base font-bold text-[#F5E6C8]">
-              كل تفاصيل فرحتك تبدأ من هنا
-            </p>
-            {onReplayCinematic && (
-              <button
-                type="button"
-                onClick={onReplayCinematic}
-                className="mt-1 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 border border-white/25 text-[11px] font-semibold text-white transition-colors"
-              >
-                <Sparkles className="w-3 h-3 text-[#EAD4A0]" />
-                <span>عرض الافتتاحية السينمائية</span>
-              </button>
-            )}
+            <p className="font-editorial text-4xl font-bold tracking-[0.22em] text-white">VÉLORA</p>
+            <div className="w-32 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+            <p className="font-display text-sm sm:text-base font-bold text-[#E8DCF3]">كل تفاصيل فرحتك تبدأ من هنا</p>
           </div>
         </div>
 

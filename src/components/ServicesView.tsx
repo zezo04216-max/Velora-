@@ -549,6 +549,9 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                         التفاصيل والحجز
                       </button>
                     </div>
+                    {(srv as { isDemo?: boolean }).isDemo && (
+                      <span className="mx-5 mb-2 inline-block rounded-full bg-[#F3ECF9] px-2.5 py-1 text-[11px] font-bold text-[#5B3278]">نموذج تجريبي</span>
+                    )}
                     <ShareLink path="/services" title={srv.titleAr} className="px-5 pb-3" />
                     <ContactRow phone={srv.contactPhone} subject={srv.titleAr} className="px-5 pb-4" />
                   </motion.article>
