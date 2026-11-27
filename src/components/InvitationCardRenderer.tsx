@@ -310,9 +310,10 @@ export const getDesignLook = (designId: string) => {
 /* background decoration per design, covering the WHOLE card */
 const ART_IDS = ['royal', 'romantic', 'classic', 'floral', 'luxury', 'modern', 'minimal'];
 const artLayer = (id: string, part: 'top' | 'bottom'): React.CSSProperties => ({
-  aspectRatio: '800 / 639',
+  aspectRatio: part === 'bottom' ? '800 / 830' : '800 / 750',
   backgroundImage: `url(/cards/${id}-${part}.webp)`,
-  backgroundSize: '100% 100%',
+  backgroundSize: part === 'bottom' ? 'auto 100%' : 'auto 100%',
+  backgroundPosition: part === 'bottom' ? 'center bottom' : 'center top',
   backgroundRepeat: 'no-repeat',
   WebkitMaskImage: `linear-gradient(${part === 'top' ? '180deg' : '0deg'}, #000 70%, transparent 100%)`,
   maskImage: `linear-gradient(${part === 'top' ? '180deg' : '0deg'}, #000 70%, transparent 100%)`,
@@ -594,7 +595,7 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
       <Decor id={id} />
       {animate && <Scene id={id} />}
       <div
-        className={`relative z-10 mx-auto max-w-xl ${id === 'modern' ? 'px-[54px]' : 'px-8'} ${id === 'modern' ? 'pt-[270px] pb-[290px]' : ART_IDS.includes(id) ? 'pt-[190px] pb-[205px]' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
+        className={`relative z-10 mx-auto max-w-xl ${id === 'modern' ? 'px-[54px]' : 'px-8'} ${id === 'modern' ? 'pt-[270px] pb-[290px]' : ART_IDS.includes(id) ? 'pt-[225px] pb-[265px]' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
         style={isModern ? { paddingInlineEnd: '2.5rem' } : undefined}
       >
         {/* header */}
@@ -659,10 +660,9 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
 
         {/* watermark (free cards) / signature (paid cards) */}
         {isFreeCard ? (
-          <div className={`flex pt-1 ${alignLeft ? 'justify-start' : 'justify-center'}`}>
+          <div className={`flex pt-1 ${ART_IDS.includes(id) ? 'mt-12' : ''} ${alignLeft ? 'justify-start' : 'justify-center'}`}>
             <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border" style={{ background: t.watermarkBg, color: t.watermarkText, borderColor: 'rgba(91,50,120,.25)' }}>
               <VeloraBrandMark size="sm" />
-              <span className="text-[10px] font-bold">صُممت مجانًا</span>
             </span>
           </div>
         ) : (

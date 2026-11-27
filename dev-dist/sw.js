@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-290dd570'], (function (workbox) { 'use strict';
+define(['./workbox-c3369df1'], (function (workbox) { 'use strict';
 
   self.skipWaiting();
   workbox.clientsClaim();
@@ -81,12 +81,21 @@ define(['./workbox-290dd570'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.s1h44igt8go"
+    "revision": "0.sas3hehrne"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
     allowlist: [/^\/$/]
   }));
+  workbox.registerRoute(({
+    url
+  }) => url.pathname.startsWith("/cards/") || url.pathname.startsWith("/demo/"), new workbox.StaleWhileRevalidate({
+    "cacheName": "velora-art-cache",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 120,
+      maxAgeSeconds: 1209600
+    })]
+  }), 'GET');
   workbox.registerRoute(({
     url
   }) => url.pathname.startsWith("/api/venues") || url.pathname.startsWith("/api/photographers") || url.pathname.startsWith("/api/services"), new workbox.NetworkFirst({
