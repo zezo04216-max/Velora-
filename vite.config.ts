@@ -52,8 +52,17 @@ export default defineConfig(() => {
         },
         workbox: {
           maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,webp}'],
+          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+          globIgnores: ['demo/**', 'cards/**'],
+          cleanupOutdatedCaches: true,
+          skipWaiting: true,
+          clientsClaim: true,
           runtimeCaching: [
+            {
+              urlPattern: ({ url }) => url.pathname.startsWith('/cards/') || url.pathname.startsWith('/demo/'),
+              handler: 'StaleWhileRevalidate',
+              options: { cacheName: 'velora-art-cache', expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 14 } },
+            },
             {
               urlPattern: ({ url }) =>
                 url.pathname.startsWith('/api/venues') ||
