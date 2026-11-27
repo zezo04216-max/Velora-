@@ -24,7 +24,7 @@ import type {
 import { apiFetch, uploadImageFile } from '../utils/api';
 import { VELORA_PRESET_PHOTOS, resolveMediaUrl } from '../utils/veloraAssets';
 import { INVITATION_DESIGNS, buildInvitationUrl, formatEgp } from '../utils/veloraLogic';
-import { InvitationCardRenderer } from './InvitationCardRenderer';
+import { InvitationCardRenderer, InvitationCardThumb } from './InvitationCardRenderer';
 import { motion } from 'motion/react';
 import { CinematicTabPanel } from './CinematicMotion';
 
@@ -237,21 +237,10 @@ export const InvitationsView: React.FC<InvitationsViewProps> = ({
                         : 'border-[#E8DCF3] bg-white hover:bg-[#FAF7FD]'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-[#24172E]">{d.labelAr}</span>
-                      {d.bgImage ? (
-                        <img
-                          src={resolveMediaUrl(d.bgImage)}
-                          alt={d.labelAr}
-                          className="w-6 h-6 rounded-md object-cover border border-[#E8DCF3] shrink-0"
-                        />
-                      ) : (
-                        <span
-                          className="w-4 h-4 rounded-full border border-[#E8DCF3] shrink-0"
-                          style={{ background: d.cardBg }}
-                        />
-                      )}
+                    <div className="flex justify-center">
+                      <InvitationCardThumb designId={id} priceEgp={price} width={128} height={160} />
                     </div>
+                    <div className="text-xs font-bold text-[#24172E] text-center">{d.labelAr}</div>
                     <div className="flex items-center justify-between text-[10px] font-bold">
                       {isFree ? (
                         <span className="px-1.5 py-0.5 rounded bg-[#EEF8F2] text-[#1D6B44] border border-[#CDE6D7]">

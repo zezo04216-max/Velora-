@@ -78,8 +78,8 @@ export const INVITATION_DESIGNS: Record<InvitationDesignId, InvitationDesignSpec
   },
   romantic: {
     id: 'romantic',
-    labelAr: 'رومانسي (ورود عاجية وزيتوني)',
-    taglineAr: 'ورود عاجية وأوراق زيتون خضراء على خلفية كريمية بإطار ذهبي دافئ',
+    labelAr: 'رومانسي (ورود وردية)',
+    taglineAr: 'ورود وردية ناعمة على خلفية بلون الخزامى والورد مع خط عربي مزخرف',
     tier: 'paid',
     priceEgp: 350,
     cardBg: 'linear-gradient(180deg, #FAF8F2 0%, #F5F1E6 100%)',
@@ -95,8 +95,8 @@ export const INVITATION_DESIGNS: Record<InvitationDesignId, InvitationDesignSpec
   },
   classic: {
     id: 'classic',
-    labelAr: 'كلاسيكي (كحلي بالورود)',
-    taglineAr: 'إطار كحلي ملكي مزين بباقات الورود والخطوط الذهبية',
+    labelAr: 'كلاسيكي (كحلي وذهبي)',
+    taglineAr: 'كحلي عميق بإطار ذهبي مزدوج وزخارف أركان كلاسيكية',
     tier: 'paid',
     priceEgp: 300,
     cardBg: 'linear-gradient(180deg, #FFFFFF 0%, #F4F6FA 100%)',
@@ -129,7 +129,7 @@ export const INVITATION_DESIGNS: Record<InvitationDesignId, InvitationDesignSpec
   floral: {
     id: 'floral',
     labelAr: 'بالورود (أزرق مائي)',
-    taglineAr: 'ورق رخامي أبيض بزهور زرقاء مائية وزخارف ذهبية',
+    taglineAr: 'خلفية بيضاء مزرقة بزهور زرقاء مائية على الأركان',
     tier: 'paid',
     priceEgp: 300,
     cardBg: 'linear-gradient(160deg, #FFFFFF 0%, #F7F9FC 100%)',

@@ -101,7 +101,7 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
     }
   };
 
-  const isRomanticTheme = invitation?.designId === 'romantic';
+  const isRomanticTheme = false; // legacy photo theme retired with the card redesign
   const showRomanticBg = isRomanticTheme && envelopeStage === 'opened';
 
   return (
