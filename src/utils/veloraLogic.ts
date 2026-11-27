@@ -112,8 +112,8 @@ export const INVITATION_DESIGNS: Record<InvitationDesignId, InvitationDesignSpec
   },
   modern: {
     id: 'modern',
-    labelAr: 'عصري',
-    taglineAr: 'تقسيم تحريري معاصر بخطوط هندسية جريئة',
+    labelAr: 'القوس البنفسجي',
+    taglineAr: 'قوس رمادي فاتح بين زهور بنفسجية ووردية على خلفية بنفسجية',
     tier: 'free',
     priceEgp: 0,
     cardBg: 'linear-gradient(135deg, #FFFFFF 0%, #F5EFFB 100%)',

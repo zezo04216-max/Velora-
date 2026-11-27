@@ -226,6 +226,7 @@ interface Theme {
   dark: boolean;
   watermarkBg: string;
   watermarkText: string;
+  env?: { bg: string; head: string; accent: string; dark: boolean };
 }
 
 const AMIRI = '"Amiri", "Cormorant Garamond", serif';
@@ -278,13 +279,14 @@ const THEMES: Record<InvitationDesignId, Theme> = {
     watermarkBg: '#FFFFFF', watermarkText: '#0B4235',
   },
   modern: {
-    bg: '#1c0a39',
-    head: '#FFFFFF', body: '#E3D8F7', accent: '#FFB3D9', line: 'rgba(255,255,255,.55)',
-    panel: 'rgba(255,255,255,.08)', panelBorder: 'rgba(255,255,255,.35)',
-    nameFont: '"Reem Kufi", "IBM Plex Sans Arabic", sans-serif', nameWeight: 700, nameSize: '2.8rem',
-    radius: '0px', photo: 'circle', date: 'big', cd: 'boxes',
-    eyebrow: 'WE ARE GETTING MARRIED', intro: 'نتشرف بدعوتكم لحضور حفل زفافنا', dark: true,
-    watermarkBg: '#FFFFFF', watermarkText: '#3A1C8C',
+    bg: '#e7e9e8',
+    head: '#2E1A47', body: '#5A4A6E', accent: '#6B3A8C', line: 'rgba(107,58,140,.35)',
+    panel: 'rgba(107,58,140,.06)', panelBorder: 'rgba(107,58,140,.28)',
+    nameFont: AMIRI, nameWeight: 700, nameSize: '2.5rem',
+    radius: '14px', photo: 'circle', date: 'plain', cd: 'boxes',
+    eyebrow: 'WE ARE GETTING MARRIED', intro: 'نتشرف بدعوتكم لحضور حفل زفافنا', dark: false,
+    watermarkBg: '#FFFFFF', watermarkText: '#4B2A78',
+    env: { bg: '#4b3a72', head: '#FFFFFF', accent: '#E9D5FF', dark: true },
   },
   minimal: {
     bg: '#fbf7ed',
@@ -300,8 +302,9 @@ const THEMES: Record<InvitationDesignId, Theme> = {
 /** colours/art info for other screens (guest envelope etc.) so they match the card */
 export const getDesignLook = (designId: string) => {
   const id = (THEMES[designId as InvitationDesignId] ? designId : 'royal') as InvitationDesignId;
-  const t = THEMES[id];
-  return { id, bg: t.bg, head: t.head, body: t.body, accent: t.accent, dark: t.dark, top: `/cards/${id}-top.webp`, bottom: `/cards/${id}-bottom.webp`, eyebrow: t.eyebrow };
+  const t0 = THEMES[id];
+  const t = { ...t0, ...((t0 as any).env || {}) };
+  return { id, bg: t.bg, head: t.head, body: t0.body, accent: t.accent, dark: t.dark, top: `/cards/${id}-top.webp`, bottom: `/cards/${id}-bottom.webp`, eyebrow: t.eyebrow };
 };
 
 /* background decoration per design, covering the WHOLE card */
@@ -317,6 +320,14 @@ const artLayer = (id: string, part: 'top' | 'bottom'): React.CSSProperties => ({
 
 const Decor: React.FC<{ id: InvitationDesignId }> = ({ id }) => {
   const abs = 'absolute pointer-events-none select-none';
+  if (id === 'modern')
+    return (
+      <>
+        <div className="absolute pointer-events-none" style={{ left: '10%', right: '10%', top: 0, bottom: 0, background: '#e7e9e8' }} />
+        <div className="absolute inset-x-0 top-0 pointer-events-none select-none" style={{ ...artLayer(id, 'top'), aspectRatio: '804 / 900', WebkitMaskImage: 'linear-gradient(180deg,#000 92%,transparent 100%)', maskImage: 'linear-gradient(180deg,#000 92%,transparent 100%)' }} />
+        <div className="absolute inset-x-0 bottom-0 pointer-events-none select-none" style={{ ...artLayer(id, 'bottom'), aspectRatio: '804 / 430', WebkitMaskImage: 'linear-gradient(0deg,#000 85%,transparent 100%)', maskImage: 'linear-gradient(0deg,#000 85%,transparent 100%)' }} />
+      </>
+    );
   if (ART_IDS.includes(id))
     return (
       <>
@@ -377,7 +388,7 @@ const Decor: React.FC<{ id: InvitationDesignId }> = ({ id }) => {
         <div className={`${abs} bottom-[26px] inset-x-0 flex justify-center`} style={{ transform: 'scaleY(-1)' }}><DecoFan color="#E8C877" /></div>
       </>
     );
-  if (id === 'modern')
+  if ((id as string) === 'modern')
     return (
       <>
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(70% 38% at 10% 6%, rgba(255,92,170,.85) 0%, transparent 70%), radial-gradient(75% 45% at 100% 30%, rgba(123,63,224,.9) 0%, transparent 70%), radial-gradient(90% 50% at 0% 95%, rgba(58,28,140,1) 0%, transparent 72%), radial-gradient(60% 30% at 90% 100%, rgba(255,92,170,.45) 0%, transparent 70%)' }} />
@@ -424,7 +435,7 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
     { ar: 'دقيقة', en: 'MIN', val: countdown.minutes },
     { ar: 'ثانية', en: 'SEC', val: countdown.seconds },
   ];
-  const isModern = id === 'modern';
+  const isModern = false;
   let wDelay = 0.95;
   /** whole-word reveal: Arabic words are never split, so joining stays intact */
   const W = (text: string, step = 0.09, wordStyle?: React.CSSProperties): React.ReactNode => {
@@ -577,13 +588,13 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
     <div
       className={`relative overflow-hidden shadow-2xl ${animate ? 'vcard-open' : ''}`}
       data-anim={animate ? id : undefined}
-      style={{ background: t.bg, color: t.head, borderRadius: isModern ? 8 : id === 'classic' ? 10 : id === 'minimal' ? 6 : 28 }}
+      style={{ background: id === 'modern' ? '#4b3a72' : t.bg, color: t.head, borderRadius: isModern ? 8 : id === 'classic' ? 10 : id === 'minimal' ? 6 : 28 }}
       data-design={id}
     >
       <Decor id={id} />
       {animate && <Scene id={id} />}
       <div
-        className={`relative z-10 mx-auto max-w-xl px-8 ${ART_IDS.includes(id) ? 'pt-[190px] pb-[205px]' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
+        className={`relative z-10 mx-auto max-w-xl ${id === 'modern' ? 'px-[54px]' : 'px-8'} ${id === 'modern' ? 'pt-[270px] pb-[215px]' : ART_IDS.includes(id) ? 'pt-[190px] pb-[205px]' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
         style={isModern ? { paddingInlineEnd: '2.5rem' } : undefined}
       >
         {/* header */}
