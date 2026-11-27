@@ -1,3 +1,5 @@
+import { tierFrameClass } from './TierFrame';
+import type { MembershipFrameTier } from '../types/velora';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Building2,
@@ -45,6 +47,13 @@ const STATUS_META: Record<
     label: 'ملغي',
     className: 'bg-[#F5F2F7] text-[#6B5A78] border-[#E4DCEB]',
   },
+};
+
+const PLAN_FRAME: Record<string, MembershipFrameTier> = {
+  'plan-provider-starter': 'starter',
+  'plan-provider-royal': 'royal',
+  'plan-provider-platinum': 'platinum',
+  'plan-client-vip': 'vip_couple',
 };
 
 export const PackagesView: React.FC<PackagesViewProps> = ({ user, onRequireAuth }) => {
@@ -172,8 +181,14 @@ export const PackagesView: React.FC<PackagesViewProps> = ({ user, onRequireAuth 
     if (amount === 0) {
       return plan.id === 'plan-client-free' ? 'للعروسين مدى الحياة' : 'تواصل لتحديد السعر';
     }
-    if (billingCycle === 'annual') return 'سنويًا (12 شهرًا)';
-    if (billingCycle === 'quarterly') return 'كل 3 شهور';
+    const months = billingCycle === 'annual' ? 12 : billingCycle === 'quarterly' ? 3 : 1;
+    const saved = plan.monthlyPriceEgp * months - amount;
+    const savingText =
+      months > 1 && saved > 0
+        ? ` · وفّر ${formatEgp(saved)} (${Math.round((saved / (plan.monthlyPriceEgp * months)) * 100)}%)`
+        : '';
+    if (billingCycle === 'annual') return `سنويًا (12 شهرًا)${savingText}`;
+    if (billingCycle === 'quarterly') return `كل 3 شهور${savingText}`;
     return 'شهريًا';
   };
 
@@ -309,13 +324,9 @@ export const PackagesView: React.FC<PackagesViewProps> = ({ user, onRequireAuth 
             return (
               <article
                 key={plan.id}
-                className={`velora-card rounded-3xl p-6 flex flex-col justify-between transition-colors ${
-                  plan.highlighted
-                    ? 'border-2 border-[#5B3278] bg-gradient-to-b from-white to-[#FAF7FD]'
-                    : isSelected
-                    ? 'border-2 border-[#C5A25D]'
-                    : 'border border-[#E8DCF3]'
-                }`}
+                className={`velora-card rounded-3xl p-6 flex flex-col justify-between transition-colors ${tierFrameClass(
+                  PLAN_FRAME[plan.id]
+                )} ${isSelected ? 'bg-[#F3ECF9]' : 'bg-gradient-to-b from-white to-[#FAF7FD]'}`}
               >
                 <div className="space-y-4">
                   <div className="flex items-start justify-between gap-2">

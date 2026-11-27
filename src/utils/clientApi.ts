@@ -47,11 +47,16 @@ import type {
   FavoriteRecord,
   InvitationDesignId,
   InvitationRsvpRecord,
+  MembershipFrameTier,
   NotificationRecord,
   PhotographerRecord,
   ReviewRecord,
   ServiceCategoryKey,
   ServiceRecord,
+  SubscriptionBillingCycle,
+  SubscriptionPlanRecord,
+  SubscriptionRequestStatus,
+  UserSubscriptionRecord,
   TargetEntityType,
   UserProfile,
   UserRole,
@@ -1262,12 +1267,126 @@ route('POST', '/api/find-wedding', async ({ body }) => {
 
 // ----- subscriptions / payments / reminders (not enabled yet) -----
 
-route('GET', '/api/subscription-plans', async () => ({ plans: [] }));
-route('GET', '/api/subscriptions/mine', async () => ({ subscriptions: [] }));
-route('POST', '/api/subscriptions/request', unavailable('الاشتراكات'));
-route('GET', '/api/admin/subscriptions', async () => ({ plans: [], requests: [] }));
-route('PUT', '/api/admin/subscription-plans/([^/]+)', unavailable('إدارة الباقات'));
-route('POST', '/api/admin/subscriptions/([^/]+)/status', unavailable('إدارة الاشتراكات'));
+const PLAN_TIER: Record<string, MembershipFrameTier> = {
+  'plan-provider-starter': 'starter',
+  'plan-provider-royal': 'royal',
+  'plan-provider-platinum': 'platinum',
+  'plan-client-vip': 'vip_couple',
+};
+const CYCLE_DAYS: Record<string, number> = { monthly: 30, quarterly: 91, annual: 365 };
+
+async function readPlans(): Promise<SubscriptionPlanRecord[]> {
+  const list = await readAll<SubscriptionPlanRecord>('subscriptionPlans');
+  return list.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+}
+
+route('GET', '/api/subscription-plans', async () => ({ plans: (await readPlans()).filter((p) => p.active) }));
+route('GET', '/api/subscriptions/mine', async () => {
+  const user = await currentUser();
+  if (!user) return { subscriptions: [] };
+  const list = await readAll<UserSubscriptionRecord>('subscriptions', ['userId', '==', user.id]);
+  return { subscriptions: list.sort(byNewest) };
+});
+route('POST', '/api/subscriptions/request', async ({ body: b }) => {
+  const { db: d } = requireDb();
+  const user = await needUser();
+  const planSnap = await getDoc(doc(d, 'subscriptionPlans', str(b.planId)));
+  if (!planSnap.exists()) fail('الباقة غير موجودة.');
+  const plan = planSnap.data() as SubscriptionPlanRecord;
+  if (!plan.active) fail('هذه الباقة غير متاحة حاليًا.');
+  const cycle = str(b.billingCycle, 'monthly');
+  if (!['monthly', 'quarterly', 'annual'].includes(cycle)) fail('مدة الاشتراك غير صحيحة.');
+  const amount = cycle === 'annual' ? plan.annualPriceEgp : cycle === 'quarterly' ? plan.quarterlyPriceEgp : plan.monthlyPriceEgp;
+  const isFree = amount === 0 && plan.id === 'plan-client-free';
+  const now = nowIso();
+  const id = newId('sub');
+  const rec: UserSubscriptionRecord = clean({
+    id,
+    userId: user.id,
+    userName: user.name,
+    userRole: user.role,
+    planId: plan.id,
+    planNameAr: plan.nameAr,
+    audience: plan.audience,
+    billingCycle: cycle as SubscriptionBillingCycle,
+    amountEgp: amount,
+    contactPhone: str(b.contactPhone).slice(0, 30),
+    businessOrCoupleName: str(b.businessOrCoupleName).slice(0, 100),
+    paymentMethod: str(b.paymentMethod).slice(0, 80),
+    paymentReceiptUrl: '',
+    notes: str(b.notes).slice(0, 300),
+    status: isFree ? 'active' : 'pending',
+    adminNote: '',
+    startsAt: isFree ? now : '',
+    endsAt: isFree ? new Date(Date.now() + 365 * 86400000).toISOString() : '',
+    createdAt: now,
+    updatedAt: now,
+  });
+  await setDoc(doc(d, 'subscriptions', id), rec);
+  if (!isFree) {
+    await notifyAdmins({
+      titleAr: 'طلب اشتراك جديد',
+      bodyAr: `"${user.name}" طلب باقة "${plan.nameAr}" (${amount} ج.م). بانتظار تأكيد الدفع والتفعيل.`,
+      kind: 'system',
+    });
+  }
+  return { subscription: rec };
+});
+route('GET', '/api/admin/subscriptions', async () => {
+  await needAdmin();
+  const [plans, requests] = await Promise.all([readPlans(), readAll<UserSubscriptionRecord>('subscriptions')]);
+  return { plans, requests: requests.sort(byNewest) };
+});
+route('PUT', '/api/admin/subscription-plans/([^/]+)', async ({ params, body: b }) => {
+  const { db: d } = requireDb();
+  const admin = await needAdmin();
+  const ref = doc(d, 'subscriptionPlans', params[0]);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) fail('الباقة غير موجودة.');
+  const price = (v: unknown, fallback: number) => Math.max(0, Math.round(Number(v) >= 0 ? Number(v) : fallback));
+  const cur = snap.data() as SubscriptionPlanRecord;
+  const next: Partial<SubscriptionPlanRecord> = clean({
+    nameAr: str(b.nameAr, cur.nameAr).slice(0, 80),
+    targetRolesAr: str(b.targetRolesAr, cur.targetRolesAr).slice(0, 120),
+    taglineAr: str(b.taglineAr, cur.taglineAr).slice(0, 200),
+    billingNoteAr: str(b.billingNoteAr, cur.billingNoteAr).slice(0, 200),
+    monthlyPriceEgp: price(b.monthlyPriceEgp, cur.monthlyPriceEgp),
+    quarterlyPriceEgp: price(b.quarterlyPriceEgp, cur.quarterlyPriceEgp),
+    annualPriceEgp: price(b.annualPriceEgp, cur.annualPriceEgp),
+    features: strArr(b.features, cur.features).slice(0, 12),
+    highlighted: typeof b.highlighted === 'boolean' ? b.highlighted : cur.highlighted,
+    active: typeof b.active === 'boolean' ? b.active : cur.active,
+  });
+  await updateDoc(ref, next as Record<string, unknown>);
+  await audit(admin, `تعديل باقة الاشتراك (${params[0]})`, 'subscription_plan', params[0]);
+  return { plan: { ...cur, ...next } };
+});
+route('POST', '/api/admin/subscriptions/([^/]+)/status', async ({ params, body: b }) => {
+  const { db: d } = requireDb();
+  const admin = await needAdmin();
+  const status = str(b.status) as SubscriptionRequestStatus;
+  if (!['active', 'rejected', 'cancelled', 'pending'].includes(status)) fail('حالة غير صحيحة.');
+  const ref = doc(d, 'subscriptions', params[0]);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) fail('طلب الاشتراك غير موجود.');
+  const sub = snap.data() as UserSubscriptionRecord;
+  const now = nowIso();
+  const patch: Record<string, unknown> = { status, adminNote: str(b.adminNote).slice(0, 300), updatedAt: now };
+  if (status === 'active') {
+    patch.startsAt = now;
+    patch.endsAt = new Date(Date.now() + (CYCLE_DAYS[sub.billingCycle] || 30) * 86400000).toISOString();
+  }
+  await updateDoc(ref, patch);
+  // The tier frame follows the subscription: set on activation, cleared on stop.
+  const tier: MembershipFrameTier = status === 'active' ? PLAN_TIER[sub.planId] || 'none' : 'none';
+  const label = status === 'active' ? sub.planNameAr : '';
+  for (const col of ['venues', 'photographers', 'services']) {
+    const mine = await readAll<{ id: string }>(col, ['ownerId', '==', sub.userId]);
+    for (const item of mine) await updateDoc(doc(d, col, item.id), { membershipTier: tier, membershipLabelAr: label });
+  }
+  await audit(admin, `تغيير حالة اشتراك (${params[0]}) إلى ${status}`, 'subscription', params[0]);
+  return { subscription: { ...sub, ...patch } };
+});
 route('GET', '/api/admin/reminders', unavailable('تذكيرات واتساب'));
 route('POST', '/api/admin/reminders/run', unavailable('تذكيرات واتساب'));
 route('POST', '/api/admin/reminders/test', unavailable('تذكيرات واتساب'));

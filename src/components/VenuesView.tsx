@@ -1,5 +1,6 @@
 import { ContactRow } from './ContactRow';
 import { ShareLink } from './ShareLink';
+import { TierBadge, tierFrameClass } from './TierFrame';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Building2,
@@ -448,7 +449,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
                   animate={{ opacity: 1, y: 0 }}
                   whileHover={{ y: -5 }}
                   transition={{ duration: 0.36, delay: Math.min(idx * 0.045, 0.25), ease: VELORA_EASE }}
-                  className="group velora-card rounded-2xl overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-lg hover:shadow-[#5B3278]/10"
+                  className={`group velora-card rounded-2xl overflow-hidden flex flex-col justify-between transition-shadow hover:shadow-lg hover:shadow-[#5B3278]/10 ${tierFrameClass(venue.membershipTier)}`}
                 >
                   <div>
                     <div className="relative h-56 overflow-hidden">
@@ -538,6 +539,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
                       عرض القاعة والحجز
                     </button>
                   </div>
+                  <TierBadge tier={venue.membershipTier} label={venue.membershipLabelAr} className="mx-5 mb-2" />
                   {(venue as { isDemo?: boolean }).isDemo && (
                     <span className="mx-5 mb-2 inline-block rounded-full bg-[#F3ECF9] px-2.5 py-1 text-[11px] font-bold text-[#5B3278]">نموذج تجريبي</span>
                   )}

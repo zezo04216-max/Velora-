@@ -175,6 +175,27 @@ service cloud.firestore {
     }
 
     // ---- config + audit ----
+    // ---- subscription plans (public prices, admin edits) and requests ----
+    match /subscriptionPlans/{planId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /subscriptions/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == uid());
+      allow create: if signedIn() && request.resource.data.userId == uid()
+        && get(/databases/$(database)/documents/subscriptionPlans/$(request.resource.data.planId)).data.active == true
+        && request.resource.data.amountEgp == (
+             request.resource.data.billingCycle == 'annual'
+               ? get(/databases/$(database)/documents/subscriptionPlans/$(request.resource.data.planId)).data.annualPriceEgp
+               : (request.resource.data.billingCycle == 'quarterly'
+                   ? get(/databases/$(database)/documents/subscriptionPlans/$(request.resource.data.planId)).data.quarterlyPriceEgp
+                   : get(/databases/$(database)/documents/subscriptionPlans/$(request.resource.data.planId)).data.monthlyPriceEgp))
+        && (request.resource.data.status == 'pending'
+            || (request.resource.data.status == 'active' && request.resource.data.amountEgp == 0
+                && request.resource.data.planId == 'plan-client-free'));
+      allow update, delete: if isAdmin();
+    }
+
     match /config/{docId} {
       allow read: if true;
       allow write: if isAdmin();
