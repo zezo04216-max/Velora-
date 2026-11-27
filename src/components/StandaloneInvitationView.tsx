@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   Camera,
@@ -9,8 +9,10 @@ import {
   Sparkles,
   UserX,
 } from 'lucide-react';
+import { Pause as PauseIcon, Play as PlayIcon, Volume2 as VolOn, VolumeX as VolOff } from 'lucide-react';
 import type { ElectronicInvitationRecord, InvitationStats } from '../types/velora';
 import { apiFetch } from '../utils/api';
+import { loadInviteAudio } from '../utils/inviteAudio';
 import { COUPLE_FLORAL_ILLUSTRATION, IVORY_ROSES_CARD_BG } from '../utils/veloraAssets';
 import { INVITATION_PHOTO_MESSAGE_AR } from '../utils/veloraLogic';
 import { FallingPetalsOverlay } from './FallingPetalsOverlay';
@@ -79,8 +81,56 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
     };
   }, [slug]);
 
+  // Invitation voice / music: loaded quietly, started on the tap that opens the envelope.
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const wantPlayRef = useRef(false);
+  const [hasAudio, setHasAudio] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioMuted, setAudioMuted] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const a = new Audio();
+    a.preload = 'auto';
+    a.loop = false;
+    (a as HTMLAudioElement & { playsInline?: boolean }).playsInline = true;
+    a.onplay = () => setAudioPlaying(true);
+    a.onpause = () => setAudioPlaying(false);
+    a.onended = () => setAudioPlaying(false);
+    audioRef.current = a;
+    void loadInviteAudio(slug).then((res) => {
+      if (cancelled || !res) return;
+      a.src = res.url;
+      setHasAudio(true);
+      // the guest already tapped before the clip finished loading: start it now (may be blocked, the button covers that)
+      if (wantPlayRef.current) a.play().catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+      a.pause();
+      audioRef.current = null;
+    };
+  }, [slug]);
+
+  const toggleAudio = () => {
+    const a = audioRef.current;
+    if (!a || !a.src) return;
+    if (a.paused) a.play().catch(() => {});
+    else a.pause();
+  };
+  const toggleMute = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.muted = !a.muted;
+    setAudioMuted(a.muted);
+  };
+
   const handleOpenEnvelope = () => {
     if (envelopeStage !== 'sealed') return;
+    // must run inside this tap so mobile browsers allow sound; never block the envelope if it fails
+    wantPlayRef.current = true;
+    const a = audioRef.current;
+    if (a && a.src) a.play().catch(() => {});
     setEnvelopeStage('opening');
     window.setTimeout(() => {
       setEnvelopeStage('opened');
@@ -127,6 +177,16 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
       style={envelopeStage !== 'opened' && invitation ? { background: `linear-gradient(180deg, #ffffff 0%, color-mix(in srgb, ${look.bg} 16%, white) 100%)` } : undefined}
     >
       <FallingPetalsOverlay enabled={envelopeStage === 'opened'} />
+      {hasAudio && invitation && (
+        <div className="fixed bottom-4 left-4 z-40 flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur border border-[#E8DCF3] shadow-lg px-1.5 py-1.5" dir="ltr">
+          <button type="button" onClick={toggleAudio} aria-label={audioPlaying ? 'إيقاف الصوت مؤقتًا' : 'تشغيل الصوت'} className="w-9 h-9 rounded-full flex items-center justify-center text-white" style={{ background: look.dark ? look.bg : look.head }}>
+            {audioPlaying ? <PauseIcon className="w-4 h-4" /> : <PlayIcon className="w-4 h-4" />}
+          </button>
+          <button type="button" onClick={toggleMute} aria-label={audioMuted ? 'تشغيل الصوت' : 'كتم الصوت'} className="w-9 h-9 rounded-full flex items-center justify-center text-[#5B3278]">
+            {audioMuted ? <VolOff className="w-4 h-4" /> : <VolOn className="w-4 h-4" />}
+          </button>
+        </div>
+      )}
       {/* Only shown to internal host preview — NEVER shown on external shared guest URLs */}
       {allowReturnToPreviewHost && onExitPreview && (
         <div className="sticky top-0 z-30 velora-glass px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -145,9 +205,12 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
       <main className="max-w-2xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 space-y-8">
         {loading ? (
           <div className="vl-load" style={{ display: 'flex', position: 'fixed', inset: 0, zIndex: 50 }} role="status" aria-live="polite">
+            <div className="vl-glow" /><div className="vl-sweep" />
+            <div className="vl-parts"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
             <div className="vl-mark">VÉLORA</div>
-            <div className="vl-env" />
-            <div className="vl-txt">جاري تجهيز دعوتك<span className="vl-dots"><i /><i /><i /></span></div>
+            <div className="vl-env"><div className="vl-ltr" /><div className="vl-seal" /></div>
+            <div className="vl-txt"><span>جاري تجهيز دعوتك</span><span>لحظات سعيدة في انتظارك</span><span>نفتح لك الظرف الملكي</span></div>
+            <div className="vl-bar"><i /></div>
           </div>
         ) : error || !invitation ? (
           <div className="velora-card rounded-3xl p-10 text-center space-y-3">

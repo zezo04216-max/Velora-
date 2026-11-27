@@ -1,3 +1,4 @@
+import { InvitationAudioEditor } from './InvitationAudioEditor';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Check,
@@ -489,6 +490,8 @@ export const InvitationsView: React.FC<InvitationsViewProps> = ({
                 <div className="p-2 rounded-xl bg-[#FAF7FD] border border-[#E8DCF3] text-[11px] font-mono text-[#5E4D6B] truncate" dir="ltr">
                   {shareUrl}
                 </div>
+
+                <InvitationAudioEditor slug={inv.slug} />
 
                 <div className="flex flex-wrap gap-2">
                   <button

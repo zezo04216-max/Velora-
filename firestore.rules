@@ -172,6 +172,21 @@ service cloud.firestore {
         && request.resource.data.paymentStatus == 'paid';
       allow delete: if isAdmin() || (signedIn() && resource.data.ownerId == uid());
 
+      // Voice/music for the guest page: base64 chunks, only the owner writes.
+      match /audio/{n} {
+        allow read: if get(/databases/$(database)/documents/invitations/$(slug)).data.get('paymentStatus', 'free') != 'pending'
+          || isAdmin() || (signedIn() && get(/databases/$(database)/documents/invitations/$(slug)).data.ownerId == uid());
+        allow create, update: if signedIn()
+          && get(/databases/$(database)/documents/invitations/$(slug)).data.ownerId == uid()
+          && n in ['0','1','2','3']
+          && request.resource.data.keys().hasOnly(['i','total','mime','name','data'])
+          && request.resource.data.i is int && request.resource.data.total is int
+          && request.resource.data.mime is string && request.resource.data.mime.matches('^audio/.*')
+          && isStr(request.resource.data.name, 80)
+          && isStr(request.resource.data.data, 900000);
+        allow delete: if isAdmin() || (signedIn() && get(/databases/$(database)/documents/invitations/$(slug)).data.ownerId == uid());
+      }
+
       match /rsvps/{rid} {
         allow read: if true;
         allow create: if exists(/databases/$(database)/documents/invitations/$(slug))
