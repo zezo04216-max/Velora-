@@ -14,7 +14,7 @@ import { apiFetch } from '../utils/api';
 import { COUPLE_FLORAL_ILLUSTRATION, IVORY_ROSES_CARD_BG } from '../utils/veloraAssets';
 import { INVITATION_PHOTO_MESSAGE_AR } from '../utils/veloraLogic';
 import { FallingPetalsOverlay } from './FallingPetalsOverlay';
-import { InvitationCardRenderer } from './InvitationCardRenderer';
+import { InvitationCardRenderer, getDesignLook } from './InvitationCardRenderer';
 
 interface StandaloneInvitationViewProps {
   slug: string;
@@ -101,6 +101,9 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
     }
   };
 
+  const look = getDesignLook(invitation?.designId || 'royal');
+  const foldA = look.dark ? 'rgba(0,0,0,.2)' : 'rgba(70,40,60,.10)';
+  const foldB = look.dark ? 'rgba(0,0,0,.3)' : 'rgba(70,40,60,.17)';
   const isRomanticTheme = false; // legacy photo theme retired with the card redesign
   const showRomanticBg = isRomanticTheme && envelopeStage === 'opened';
 
@@ -111,6 +114,7 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
           ? 'bg-[#0B2418]'
           : 'bg-gradient-to-b from-[#FFFFFF] via-[#FAF7FD] to-[#F3ECF9]'
       }`}
+      style={envelopeStage !== 'opened' && invitation ? { background: `linear-gradient(180deg, #ffffff 0%, color-mix(in srgb, ${look.bg} 16%, white) 100%)` } : undefined}
     >
       <FallingPetalsOverlay enabled={envelopeStage === 'opened'} />
       {/* Only shown to internal host preview — NEVER shown on external shared guest URLs */}
@@ -142,10 +146,10 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
           /* Stage 1 & 2: Royal VÉLORA Signature Envelope with Couple Names Embossed on Top Flap */
           <div className="min-h-[78vh] flex flex-col items-center justify-center py-6 space-y-7">
             <div className="text-center space-y-1.5">
-              <p className="font-editorial text-xs tracking-[0.32em] uppercase font-semibold text-[#5B3278]">
-                ROYAL INVITATION · VÉLORA
+              <p className="relative font-editorial text-xs tracking-[0.32em] uppercase font-semibold" style={{ color: look.dark ? look.bg : look.head }}>
+                {look.eyebrow} · VÉLORA
               </p>
-              <p className="text-xs sm:text-sm font-medium text-[#5E4D6B]">
+              <p className="relative text-xs sm:text-sm font-medium text-[#5E4D6B]">
                 دعوة خاصة لحضور حفل زفاف سعيد
               </p>
             </div>
@@ -158,8 +162,7 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
                   envelopeStage === 'opening' ? 'animate-envelope-burst' : 'animate-envelope-glow'
                 }`}
                 style={{
-                  background:
-                    'radial-gradient(circle at 50% 55%, rgba(234,212,160,0.65) 0%, rgba(197,162,93,0.35) 35%, rgba(91,50,120,0.22) 68%, transparent 100%)',
+                  background: `radial-gradient(circle at 50% 55%, ${look.accent}99 0%, ${look.accent}55 35%, ${look.bg}33 68%, transparent 100%)`,
                 }}
               />
 
@@ -180,32 +183,35 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
               <button
                 type="button"
                 onClick={handleOpenEnvelope}
-                className="relative w-full aspect-[4/3] rounded-[22px] shadow-2xl shadow-[#5B3278]/35 cursor-pointer focus:outline-none group"
+                className="relative w-full aspect-[4/3] rounded-[22px] shadow-2xl cursor-pointer focus:outline-none group"
                 style={{
                   perspective: '1200px',
+                  boxShadow: `0 25px 50px -12px ${look.accent}66`,
                 }}
                 aria-label={`افتح ظرف دعوة ${invitation.groomName} و ${invitation.brideName}`}
               >
                 {/* Envelope Base Body (Royal Purple Velvet with Gold Frame) */}
                 <div
-                  className="absolute inset-0 rounded-[22px] overflow-hidden border-2 border-[#C5A25D]"
+                  className="absolute inset-0 rounded-[22px] overflow-hidden border-2"
                   style={{
-                    background: 'linear-gradient(155deg, #4B2366 0%, #5B3278 52%, #391952 100%)',
+                    background: look.bg,
+                    borderColor: look.accent,
                   }}
                 >
                   {/* Inner Stitched Gold Foil Edge */}
-                  <div className="absolute inset-2.5 rounded-2xl border border-[#EAD4A0]/35 pointer-events-none z-10" />
+                  <div className="absolute inset-2.5 rounded-2xl border pointer-events-none z-10" style={{ borderColor: `${look.accent}66` }} />
 
                   {/* Peeking Inner Cream Card Rising on Open */}
                   <div
-                    className={`absolute inset-x-5 bottom-3 h-[84%] rounded-t-2xl bg-[#FFFDF9] border-2 border-[#EAD4A0] shadow-inner flex flex-col items-center justify-center gap-1.5 transition-transform duration-700 ${
+                    className={`absolute inset-x-5 bottom-3 h-[84%] rounded-t-2xl border-2 shadow-inner flex flex-col items-center justify-center gap-1.5 transition-transform duration-700 ${
                       envelopeStage === 'opening' ? '-translate-y-14 scale-[1.03]' : 'translate-y-4'
                     }`}
+                    style={{ background: `linear-gradient(180deg, ${look.bg}, color-mix(in srgb, ${look.bg} 88%, ${look.dark ? '#000' : '#fff'}))`, borderColor: look.accent }}
                   >
-                    <p className="font-editorial text-[10px] tracking-[0.28em] text-[#C5A25D] font-semibold">
+                    <p className="font-editorial text-[10px] tracking-[0.28em] font-semibold" style={{ color: look.accent }}>
                       YOU ARE INVITED
                     </p>
-                    <p className="font-display text-2xl font-bold text-[#5B3278]">
+                    <p className="font-display text-2xl font-bold" style={{ color: look.head }}>
                       {invitation.groomName} &amp; {invitation.brideName}
                     </p>
                   </div>
@@ -215,24 +221,25 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
                     className="absolute inset-0 pointer-events-none"
                     style={{
                       background:
-                        'linear-gradient(212deg, rgba(84,43,115,0.97) 50%, transparent 50.6%), linear-gradient(148deg, rgba(64,29,90,0.98) 50%, transparent 50.6%)',
+                        `linear-gradient(212deg, ${foldA} 50%, transparent 50.6%), linear-gradient(148deg, ${foldB} 50%, transparent 50.6%)`,
                       transform: 'scaleY(-1)',
                     }}
                   />
 
                   {/* Bottom Triangular Velvet Pocket with Gold Rim + Venue / Date Print */}
                   <div
-                    className="absolute inset-x-0 bottom-0 h-[56%] pointer-events-none border-t border-[#C5A25D]/45 flex flex-col items-center justify-end pb-4 px-5"
+                    className="absolute inset-x-0 bottom-0 h-[56%] pointer-events-none border-t flex flex-col items-center justify-end pb-4 px-5"
                     style={{
-                      background: 'linear-gradient(180deg, #562D73 0%, #3E1C57 100%)',
+                      borderColor: `${look.accent}73`,
+                      background: `linear-gradient(180deg, ${look.bg}f2 0%, ${look.bg}cc 100%), url(${look.bottom}) center bottom / cover no-repeat, ${look.bg}`,
                       clipPath: 'polygon(0 100%, 50% 10%, 100% 100%)',
                     }}
                   >
                     <div className="text-center space-y-0.5 max-w-[85%]">
-                      <p className="text-[11px] font-semibold text-[#EAD4A0] truncate tabular-nums">
+                      <p className="text-[11px] font-semibold truncate tabular-nums" style={{ color: look.accent }}>
                         {invitation.weddingDate} · {invitation.venueName}
                       </p>
-                      <p className="text-[10px] tracking-[0.18em] text-[#E6D6F4]/85">
+                      <p className="text-[10px] tracking-[0.18em]" style={{ color: look.body }}>
                         تفضلوا بفتح الظرف
                       </p>
                     </div>
@@ -248,22 +255,23 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
                   }}
                 >
                   <div
-                    className="relative w-full h-full rounded-t-[22px] border-t-2 border-x-2 border-[#C5A25D] flex flex-col items-center justify-start pt-4 sm:pt-5 px-6 text-center"
+                    className="relative w-full h-full rounded-t-[22px] border-t-2 border-x-2 flex flex-col items-center justify-start pt-4 sm:pt-5 px-6 text-center"
                     style={{
-                      background: 'linear-gradient(180deg, #6A3C8D 0%, #52296E 70%, #44205C 100%)',
+                      borderColor: look.accent,
+                      background: `linear-gradient(180deg, ${look.bg}f0 0%, ${look.bg}b3 100%), url(${look.top}) center top / cover no-repeat, ${look.bg}`,
                       clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
                     }}
                   >
                     <div className="space-y-1 max-w-[88%]">
-                      <p className="font-editorial text-[9px] sm:text-[10px] tracking-[0.28em] uppercase text-[#EAD4A0] font-semibold">
+                      <p className="font-editorial text-[9px] sm:text-[10px] tracking-[0.28em] uppercase font-semibold" style={{ color: look.accent }}>
                         ✦ VÉLORA WEDDING INVITATION ✦
                       </p>
-                      <h1 className="font-display text-2xl sm:text-[28px] font-bold text-white leading-tight drop-shadow-sm">
+                      <h1 className="font-display text-2xl sm:text-[28px] font-bold leading-tight drop-shadow-sm" style={{ color: look.head }}>
                         {invitation.groomName}{' '}
-                        <span className="font-editorial italic text-[#EAD4A0]">&amp;</span>{' '}
+                        <span className="font-editorial italic" style={{ color: look.accent }}>&amp;</span>{' '}
                         {invitation.brideName}
                       </h1>
-                      <div className="w-20 h-[1px] mx-auto bg-gradient-to-r from-transparent via-[#EAD4A0]/80 to-transparent" />
+                      <div className="w-20 h-[1px] mx-auto" style={{ background: `linear-gradient(to right, transparent, ${look.accent}, transparent)` }} />
                     </div>
                   </div>
                 </div>
@@ -274,7 +282,7 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
                     envelopeStage === 'opening' ? 'opacity-0 scale-125' : 'opacity-100 group-hover:scale-105'
                   }`}
                 >
-                  <div className="relative w-15 h-15 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-[#F4E1B2] via-[#C5A25D] to-[#8F6D2B] shadow-xl shadow-[#240D35]/50 border-2 border-[#FFF8E6] flex flex-col items-center justify-center text-[#2E183E]">
+                  <div className="relative w-15 h-15 sm:w-16 sm:h-16 rounded-full shadow-xl border-2 border-[#FFF8E6] flex flex-col items-center justify-center text-[#2E183E]" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${look.accent} 45%, white), ${look.accent}, color-mix(in srgb, ${look.accent} 65%, black))`, boxShadow: '0 10px 25px rgba(0,0,0,.35)' }}>
                     <Sparkles className="w-4 h-4 mb-0.5 text-[#3B1A52]" />
                     <span className="font-editorial text-[9px] font-extrabold tracking-widest text-[#2E183E]">
                       VÉLORA
@@ -288,9 +296,10 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
               type="button"
               onClick={handleOpenEnvelope}
               disabled={envelopeStage !== 'sealed'}
-              className="px-7 py-3.5 rounded-2xl bg-[#5B3278] hover:bg-[#482461] text-white text-sm font-bold shadow-lg shadow-[#5B3278]/25 transition-all flex items-center gap-2 border border-[#C5A25D]/40"
+              className="relative px-7 py-3.5 rounded-2xl text-sm font-bold shadow-lg transition-all flex items-center gap-2 border hover:brightness-110"
+              style={{ background: look.dark ? look.bg : look.head, color: look.dark ? look.head : '#fff', borderColor: look.accent }}
             >
-              <Sparkles className="w-4 h-4 text-[#EAD4A0]" />
+              <Sparkles className="w-4 h-4" style={{ color: look.accent }} />
               <span>{envelopeStage === 'opening' ? 'جاري فتح الظرف الملكي...' : 'افتح الدعوة الآن'}</span>
             </button>
           </div>

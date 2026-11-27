@@ -297,6 +297,13 @@ const THEMES: Record<InvitationDesignId, Theme> = {
   },
 };
 
+/** colours/art info for other screens (guest envelope etc.) so they match the card */
+export const getDesignLook = (designId: string) => {
+  const id = (THEMES[designId as InvitationDesignId] ? designId : 'royal') as InvitationDesignId;
+  const t = THEMES[id];
+  return { id, bg: t.bg, head: t.head, body: t.body, accent: t.accent, dark: t.dark, top: `/cards/${id}-top.webp`, bottom: `/cards/${id}-bottom.webp`, eyebrow: t.eyebrow };
+};
+
 /* background decoration per design, covering the WHOLE card */
 const ART_IDS = ['royal', 'romantic', 'classic', 'floral', 'luxury', 'modern', 'minimal'];
 const artLayer = (id: string, part: 'top' | 'bottom'): React.CSSProperties => ({
