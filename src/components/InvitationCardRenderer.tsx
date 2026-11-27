@@ -231,7 +231,7 @@ interface Theme {
 const AMIRI = '"Amiri", "Cormorant Garamond", serif';
 const THEMES: Record<InvitationDesignId, Theme> = {
   royal: {
-    bg: 'radial-gradient(120% 70% at 50% 0%, #6A3A8C 0%, #4A2364 45%, #2F1243 100%)',
+    bg: '#3d1549',
     head: '#FFFFFF', body: '#EDE3F6', accent: '#E6C77F', line: 'rgba(230,199,127,.55)',
     panel: 'rgba(255,255,255,.07)', panelBorder: 'rgba(230,199,127,.4)',
     nameFont: AMIRI, nameWeight: 700, nameSize: '2.7rem',
@@ -241,7 +241,7 @@ const THEMES: Record<InvitationDesignId, Theme> = {
     watermarkBg: 'rgba(255,255,255,.95)', watermarkText: '#5B3278',
   },
   romantic: {
-    bg: 'linear-gradient(170deg,#FFF6F3 0%,#FBE6E6 50%,#F4D3DA 100%)',
+    bg: '#fdefe8',
     head: '#6B2D45', body: '#8A5368', accent: '#C0566E', line: 'rgba(192,86,110,.4)',
     panel: 'rgba(255,255,255,.65)', panelBorder: 'rgba(192,86,110,.28)',
     nameFont: '"Aref Ruqaa", "Amiri", serif', nameWeight: 700, nameSize: '2.6rem',
@@ -250,7 +250,7 @@ const THEMES: Record<InvitationDesignId, Theme> = {
     watermarkBg: '#FFFFFF', watermarkText: '#6B2D45',
   },
   classic: {
-    bg: 'linear-gradient(180deg,#1B2A4A 0%,#14203A 100%)',
+    bg: '#11213e',
     head: '#FFFFFF', body: '#D7DFEF', accent: '#D8B46A', line: 'rgba(216,180,106,.6)',
     panel: 'rgba(255,255,255,.05)', panelBorder: 'rgba(216,180,106,.35)',
     nameFont: AMIRI, nameWeight: 700, nameSize: '2.6rem',
@@ -259,7 +259,7 @@ const THEMES: Record<InvitationDesignId, Theme> = {
     watermarkBg: '#FFFFFF', watermarkText: '#1B2A4A',
   },
   floral: {
-    bg: 'linear-gradient(165deg,#FFFFFF 0%,#EEF4FB 55%,#DDE9F6 100%)',
+    bg: '#f3f7fb',
     head: '#1E3A66', body: '#46618A', accent: '#2F5E9E', line: 'rgba(47,94,158,.35)',
     panel: 'rgba(255,255,255,.75)', panelBorder: 'rgba(47,94,158,.22)',
     nameFont: AMIRI, nameWeight: 700, nameSize: '2.6rem',
@@ -268,7 +268,7 @@ const THEMES: Record<InvitationDesignId, Theme> = {
     watermarkBg: '#FFFFFF', watermarkText: '#1E3A66',
   },
   luxury: {
-    bg: 'radial-gradient(120% 70% at 50% 0%, #11634E 0%, #0B4235 48%, #06261F 100%)',
+    bg: '#034032',
     head: '#FFFFFF', body: '#D3E8DF', accent: '#E8C877', line: 'rgba(232,200,119,.6)',
     panel: 'rgba(255,255,255,.06)', panelBorder: 'rgba(232,200,119,.45)',
     nameFont: AMIRI, nameWeight: 700, nameSize: '2.7rem',
@@ -278,7 +278,7 @@ const THEMES: Record<InvitationDesignId, Theme> = {
     watermarkBg: '#FFFFFF', watermarkText: '#0B4235',
   },
   modern: {
-    bg: '#1B0B3D',
+    bg: '#1c0a39',
     head: '#FFFFFF', body: '#E3D8F7', accent: '#FFB3D9', line: 'rgba(255,255,255,.55)',
     panel: 'rgba(255,255,255,.08)', panelBorder: 'rgba(255,255,255,.35)',
     nameFont: '"Reem Kufi", "IBM Plex Sans Arabic", sans-serif', nameWeight: 700, nameSize: '2.8rem',
@@ -287,7 +287,7 @@ const THEMES: Record<InvitationDesignId, Theme> = {
     watermarkBg: '#FFFFFF', watermarkText: '#3A1C8C',
   },
   minimal: {
-    bg: '#FBF8F2',
+    bg: '#fbf7ed',
     head: '#2B1B36', body: '#7A6A82', accent: '#6B3A8C', line: 'rgba(107,58,140,.35)',
     panel: 'transparent', panelBorder: 'rgba(107,58,140,.25)',
     nameFont: AMIRI, nameWeight: 400, nameSize: '2.7rem',
@@ -298,8 +298,25 @@ const THEMES: Record<InvitationDesignId, Theme> = {
 };
 
 /* background decoration per design, covering the WHOLE card */
+const ART_IDS = ['royal', 'romantic', 'classic', 'floral', 'luxury', 'modern', 'minimal'];
+const artLayer = (id: string, part: 'top' | 'bottom'): React.CSSProperties => ({
+  aspectRatio: '800 / 639',
+  backgroundImage: `url(/cards/${id}-${part}.webp)`,
+  backgroundSize: '100% 100%',
+  backgroundRepeat: 'no-repeat',
+  WebkitMaskImage: `linear-gradient(${part === 'top' ? '180deg' : '0deg'}, #000 70%, transparent 100%)`,
+  maskImage: `linear-gradient(${part === 'top' ? '180deg' : '0deg'}, #000 70%, transparent 100%)`,
+});
+
 const Decor: React.FC<{ id: InvitationDesignId }> = ({ id }) => {
   const abs = 'absolute pointer-events-none select-none';
+  if (ART_IDS.includes(id))
+    return (
+      <>
+        <div className="absolute inset-x-0 top-0 pointer-events-none select-none" style={artLayer(id, 'top')} />
+        <div className="absolute inset-x-0 bottom-0 pointer-events-none select-none" style={artLayer(id, 'bottom')} />
+      </>
+    );
   if (id === 'royal')
     return (
       <>
@@ -559,12 +576,12 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
       <Decor id={id} />
       {animate && <Scene id={id} />}
       <div
-        className={`relative z-10 mx-auto max-w-xl px-8 ${id === 'luxury' ? 'pt-28 pb-28' : id === 'minimal' ? 'pt-24 pb-24' : id === 'romantic' || id === 'floral' ? 'pt-24 pb-24' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
+        className={`relative z-10 mx-auto max-w-xl px-8 ${ART_IDS.includes(id) ? 'pt-[190px] pb-[205px]' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
         style={isModern ? { paddingInlineEnd: '2.5rem' } : undefined}
       >
         {/* header */}
         <div className="space-y-3">
-          {id === 'royal' && <div className="flex justify-center"><Crown color={t.accent} /></div>}
+          
           <p dir="ltr" className="font-editorial text-[11px] font-semibold tracking-[0.3em] uppercase" style={{ color: t.accent, textAlign: alignLeft ? 'right' : 'center' }}>
             {W(t.eyebrow, 0.14)}
           </p>
