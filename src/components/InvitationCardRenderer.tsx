@@ -325,7 +325,7 @@ const Decor: React.FC<{ id: InvitationDesignId }> = ({ id }) => {
       <>
         <div className="absolute pointer-events-none" style={{ left: '10%', right: '10%', top: 0, bottom: 0, background: '#e7e9e8' }} />
         <div className="absolute inset-x-0 top-0 pointer-events-none select-none" style={{ ...artLayer(id, 'top'), aspectRatio: '804 / 900', WebkitMaskImage: 'linear-gradient(180deg,#000 92%,transparent 100%)', maskImage: 'linear-gradient(180deg,#000 92%,transparent 100%)' }} />
-        <div className="absolute inset-x-0 bottom-0 pointer-events-none select-none" style={{ ...artLayer(id, 'bottom'), aspectRatio: '804 / 430', WebkitMaskImage: 'linear-gradient(0deg,#000 85%,transparent 100%)', maskImage: 'linear-gradient(0deg,#000 85%,transparent 100%)' }} />
+        <div className="absolute inset-x-0 bottom-0 pointer-events-none select-none" style={{ ...artLayer(id, 'bottom'), aspectRatio: '804 / 650', WebkitMaskImage: 'linear-gradient(0deg,#000 88%,transparent 100%)', maskImage: 'linear-gradient(0deg,#000 88%,transparent 100%)' }} />
       </>
     );
   if (ART_IDS.includes(id))
@@ -594,7 +594,7 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
       <Decor id={id} />
       {animate && <Scene id={id} />}
       <div
-        className={`relative z-10 mx-auto max-w-xl ${id === 'modern' ? 'px-[54px]' : 'px-8'} ${id === 'modern' ? 'pt-[270px] pb-[215px]' : ART_IDS.includes(id) ? 'pt-[190px] pb-[205px]' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
+        className={`relative z-10 mx-auto max-w-xl ${id === 'modern' ? 'px-[54px]' : 'px-8'} ${id === 'modern' ? 'pt-[270px] pb-[290px]' : ART_IDS.includes(id) ? 'pt-[190px] pb-[205px]' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
         style={isModern ? { paddingInlineEnd: '2.5rem' } : undefined}
       >
         {/* header */}
