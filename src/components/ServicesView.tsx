@@ -1,4 +1,5 @@
 import { ContactRow } from './ContactRow';
+import { ShareLink } from './ShareLink';
 import React, { useMemo, useState } from 'react';
 import {
   CalendarCheck2,
@@ -548,6 +549,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                         التفاصيل والحجز
                       </button>
                     </div>
+                    <ShareLink path="/services" title={srv.titleAr} className="px-5 pb-3" />
                     <ContactRow phone={srv.contactPhone} subject={srv.titleAr} className="px-5 pb-4" />
                   </motion.article>
                 );

@@ -1,4 +1,5 @@
 import { ContactRow } from './ContactRow';
+import { ShareLink } from './ShareLink';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Camera,
@@ -533,6 +534,7 @@ export const PhotographersView: React.FC<PhotographersViewProps> = ({
                       الألبومات والحجز
                     </button>
                   </div>
+                  <ShareLink path={`/photographers/${p.id}`} title={p.displayName} className="px-5 pb-3" />
                   <ContactRow phone={p.contactPhone} subject={p.displayName} className="px-5 pb-4" />
                 </motion.article>
               );

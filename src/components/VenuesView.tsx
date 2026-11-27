@@ -1,4 +1,5 @@
 import { ContactRow } from './ContactRow';
+import { ShareLink } from './ShareLink';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Building2,
@@ -537,6 +538,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
                       عرض القاعة والحجز
                     </button>
                   </div>
+                  <ShareLink path={`/venues/${venue.id}`} title={venue.titleAr} className="px-5 pb-3" />
                   <ContactRow phone={venue.contactPhone} subject={venue.titleAr} className="px-5 pb-4" />
                 </motion.article>
               );
