@@ -1120,14 +1120,15 @@ route('POST', '/api/invitations', async ({ body: b }) => {
   if ((await getDoc(doc(d, 'invitations', slug))).exists()) {
     slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
   }
-  const designId = (str(b.designId, 'floral') as InvitationDesignId);
   const prices = await getPrices();
+  const designId = (str(b.designId, 'floral') in INVITATION_DESIGNS ? str(b.designId, 'floral') : 'floral') as InvitationDesignId;
   const rec: ElectronicInvitationRecord = clean({
     id: slug,
     ownerId: user.id,
     slug,
     designId,
     designPriceEgp: prices[designId] ?? 0,
+    paymentStatus: (prices[designId] ?? 0) > 0 ? 'pending' : 'free',
     groomName: str(b.groomName),
     brideName: str(b.brideName),
     weddingDate: str(b.weddingDate),
@@ -1153,7 +1154,7 @@ route('GET', '/api/invitations/([^/]+)', async ({ params }) => {
   try {
     snap = await getDoc(doc(d, 'invitations', slug));
   } catch {
-    return fail('رابط الدعوة غير موجود أو تم حذفه.');
+    return fail('هذه الدعوة غير موجودة، أو بانتظار تفعيل الدفع من الإدارة.');
   }
   if (!snap.exists()) return fail('رابط الدعوة غير موجود أو تم حذفه.');
   const invitation = snap.data() as ElectronicInvitationRecord;
@@ -1431,6 +1432,13 @@ route('POST', '/api/admin/users/([^/]+)', async ({ params, body }) => {
   return { user: { ...target, role, status } };
 });
 
+route('POST', '/api/admin/invitations/([^/]+)/activate', async ({ params }) => {
+  const { db: d } = requireDb();
+  const admin = await needAdmin();
+  await updateDoc(doc(d, 'invitations', params[0]), { paymentStatus: 'paid' });
+  await audit(admin, `تفعيل دعوة مدفوعة (${params[0]}) بعد استلام الدفع`, 'invitation', params[0]);
+  return { ok: true };
+});
 route('DELETE', '/api/admin/invitations/([^/]+)', async ({ params }) => {
   const admin = await needAdmin();
   await deleteInvitationDeep(decodeURIComponent(params[0]));

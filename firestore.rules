@@ -134,10 +134,18 @@ service cloud.firestore {
 
     // ---- invitations (guest links are public by slug; lists are private) ----
     match /invitations/{slug} {
-      allow get: if true;
+      allow get: if resource == null || resource.data.get('paymentStatus', 'free') != 'pending'
+        || isAdmin() || (signedIn() && resource.data.ownerId == uid());
       allow list: if isAdmin() || (signedIn() && resource.data.ownerId == uid());
-      allow create: if signedIn() && request.resource.data.ownerId == uid() && request.resource.data.slug == slug;
-      allow update: if false;
+      // The price is taken from the admin-controlled config, never from the client.
+      allow create: if signedIn() && request.resource.data.ownerId == uid() && request.resource.data.slug == slug
+        && request.resource.data.designPriceEgp == get(/databases/$(database)/documents/config/invitationPricing).data.templatePrices[request.resource.data.designId]
+        && ((request.resource.data.designPriceEgp > 0 && request.resource.data.paymentStatus == 'pending')
+            || (request.resource.data.designPriceEgp == 0 && request.resource.data.paymentStatus == 'free'));
+      // Only the admin can mark a paid card as activated.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paymentStatus'])
+        && request.resource.data.paymentStatus == 'paid';
       allow delete: if isAdmin() || (signedIn() && resource.data.ownerId == uid());
 
       match /rsvps/{rid} {

@@ -918,7 +918,26 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 <p className="text-xs text-[#5E4D6B]">
                   {inv.weddingDate} · {inv.venueName} · حضور: {inv.stats?.attendingCount || 0}
                 </p>
+                {inv.paymentStatus === 'pending' && (
+                  <p className="text-xs font-bold text-[#9A5B00] mt-1">
+                    بانتظار الدفع · {formatEgp(inv.designPriceEgp || 0)}
+                  </p>
+                )}
               </div>
+              {inv.paymentStatus === 'pending' && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    runAction(
+                      () => apiFetch(`/api/admin/invitations/${inv.id}/activate`, { method: 'POST' }).then(() => undefined),
+                      'تم تفعيل الدعوة بعد تأكيد الدفع.'
+                    )
+                  }
+                  className="px-3 py-2 rounded-xl bg-[#5B3278] text-white text-xs font-bold shrink-0"
+                >
+                  تأكيد الدفع وتفعيل
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() =>

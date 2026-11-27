@@ -170,7 +170,11 @@ export const InvitationsView: React.FC<InvitationsViewProps> = ({
       });
       onInvitationCreated(res.invitation);
       setSelectedStatsSlug(res.invitation.slug);
-      setFeedback('تم إنشاء الدعوة وحفظها! يمكنك الآن نسخ رابطها ومشاركته مع جميع المدعوين.');
+      setFeedback(
+        res.invitation.paymentStatus === 'pending'
+          ? `تم حفظ الدعوة (${formatEgp(res.invitation.designPriceEgp || 0)}). الكارت مدفوع: سيتواصل معك فريق VÉLORA لتأكيد الدفع، وبعدها يعمل رابط الدعوة للمدعوين.`
+          : 'تم إنشاء الدعوة وحفظها! يمكنك الآن نسخ رابطها ومشاركته مع جميع المدعوين.'
+      );
     } catch (err) {
       setFeedback(err instanceof Error ? err.message : 'تعذر حفظ الدعوة.');
     } finally {

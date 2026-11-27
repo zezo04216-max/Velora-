@@ -267,6 +267,8 @@ export interface ElectronicInvitationRecord {
   slug: string;
   designId: InvitationDesignId;
   designPriceEgp?: number;
+  /** free: no charge; pending: paid card waiting for the admin to confirm payment; paid: activated. */
+  paymentStatus?: 'free' | 'pending' | 'paid';
   groomName: string;
   brideName: string;
   weddingDate: string;
