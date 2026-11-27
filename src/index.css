@@ -200,3 +200,40 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ───── invitation card: cinematic open + word-by-word reveal ───── */
+.vcard-open { animation: vcard-open 1.1s cubic-bezier(.16,1,.3,1) both; transform-origin: top center; }
+@keyframes vcard-open {
+  from { opacity: 0; transform: perspective(900px) rotateX(-22deg) scale(.9); filter: brightness(1.6); }
+  to { opacity: 1; transform: perspective(900px) rotateX(0) scale(1); filter: brightness(1); }
+}
+.vw { display: inline-block; opacity: 0; animation: vw-rise .9s cubic-bezier(.2,.8,.2,1) both; will-change: transform, opacity; }
+.vfade { opacity: 0; animation: vfade-in .9s ease-out both; }
+@keyframes vw-rise { from { opacity: 0; transform: translateY(22px) scale(.92); filter: blur(6px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes vfade-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+[data-anim="royal"] .vw { animation-name: vw-royal; animation-duration: 1.1s; }
+@keyframes vw-royal { from { opacity: 0; transform: translateY(-26px) scale(1.5); filter: blur(10px) brightness(2); } to { opacity: 1; transform: none; filter: none; } }
+[data-anim="romantic"] .vw { animation-name: vw-romantic; animation-duration: 1.3s; }
+@keyframes vw-romantic { from { opacity: 0; transform: translate(-18px,-30px) rotate(-8deg) scale(.85); filter: blur(4px); } 60% { opacity: 1; transform: translate(4px,4px) rotate(2deg); } to { opacity: 1; transform: none; filter: none; } }
+[data-anim="classic"] .vw:nth-child(odd) { animation-name: vw-from-right; }
+[data-anim="classic"] .vw:nth-child(even) { animation-name: vw-from-left; }
+@keyframes vw-from-right { from { opacity: 0; transform: translateX(46px); } to { opacity: 1; transform: none; } }
+@keyframes vw-from-left { from { opacity: 0; transform: translateX(-46px); } to { opacity: 1; transform: none; } }
+[data-anim="floral"] .vw { animation-name: vw-bloom; animation-duration: 1.2s; }
+@keyframes vw-bloom { from { opacity: 0; transform: scale(.3) rotate(-6deg); filter: blur(5px); } 70% { transform: scale(1.08); } to { opacity: 1; transform: none; filter: none; } }
+[data-anim="luxury"] .vw { animation-name: vw-luxury; animation-duration: 1.2s; }
+@keyframes vw-luxury { from { opacity: 0; transform: translateY(30px); filter: blur(8px) saturate(0); } to { opacity: 1; transform: none; filter: none; } }
+[data-anim="modern"] .vw { animation-name: vw-modern; animation-duration: .7s; }
+@keyframes vw-modern { from { opacity: 0; transform: translateX(-60px) skewX(-12deg); } to { opacity: 1; transform: none; } }
+[data-anim="minimal"] .vw { animation-name: vw-minimal; animation-duration: 1.4s; }
+@keyframes vw-minimal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.vp { position: absolute; top: -8%; opacity: 0; animation: vp-fall linear infinite; }
+.vp-spark { border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+.vp-petal { border-radius: 60% 40% 60% 40%; }
+.vp-line { border-radius: 2px; }
+@keyframes vp-fall { 0% { opacity: 0; transform: translateY(0) rotate(0); } 12% { opacity: .75; } 85% { opacity: .5; } 100% { opacity: 0; transform: translateY(120vh) rotate(220deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .vcard-open, .vw, .vfade, .vp { animation: none !important; opacity: 1 !important; filter: none !important; transform: none !important; }
+  .vp { display: none; }
+}
+.vp-line { filter: opacity(.4); }

@@ -23,7 +23,47 @@ interface InvitationCardRendererProps {
   invitation: InvitationData;
   /** freeze the countdown (used for miniatures) */
   frozen?: boolean;
+  /** play the cinematic open + word-by-word reveal */
+  animate?: boolean;
 }
+
+/* floating particles per design (sparkles, petals, lines) - CSS only */
+const PARTICLES: Record<string, { color: string; kind: 'spark' | 'petal' | 'line' | 'none' }> = {
+  royal: { color: '#E6C77F', kind: 'spark' },
+  romantic: { color: '#F2A9BA', kind: 'petal' },
+  classic: { color: '#D8B46A', kind: 'spark' },
+  floral: { color: '#8FB2DB', kind: 'petal' },
+  luxury: { color: '#B8913F', kind: 'spark' },
+  modern: { color: '#7B3FA8', kind: 'line' },
+  minimal: { color: '#5B3278', kind: 'none' },
+};
+
+const Scene: React.FC<{ id: string }> = ({ id }) => {
+  const cfg = PARTICLES[id];
+  if (!cfg || cfg.kind === 'none') return null;
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+      {Array.from({ length: 14 }).map((_, i) => {
+        const left = (i * 53 + 11) % 100;
+        const size = cfg.kind === 'line' ? 2 : 4 + ((i * 7) % 6);
+        return (
+          <span
+            key={i}
+            className={`vp vp-${cfg.kind}`}
+            style={{
+              left: `${left}%`,
+              width: cfg.kind === 'line' ? 2 : size,
+              height: cfg.kind === 'line' ? 40 + ((i * 13) % 50) : cfg.kind === 'petal' ? size * 1.6 : size,
+              background: cfg.color,
+              animationDelay: `${0.6 + (i % 7) * 0.45}s`,
+              animationDuration: `${6 + (i % 5)}s`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+};
 
 const ARABIC_DAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 const ARABIC_MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -311,7 +351,7 @@ const Decor: React.FC<{ id: InvitationDesignId }> = ({ id }) => {
 
 /* ───────────── main renderer ───────────── */
 
-export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ invitation, frozen }) => {
+export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ invitation, frozen, animate }) => {
   const id = (INVITATION_DESIGNS[invitation.designId] ? invitation.designId : 'royal') as InvitationDesignId;
   const spec = INVITATION_DESIGNS[id];
   const t = THEMES[id];
@@ -334,19 +374,41 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
     { ar: 'ثانية', en: 'SEC', val: countdown.seconds },
   ];
   const isModern = id === 'modern';
+  let wDelay = 0.95;
+  /** whole-word reveal: Arabic words are never split, so joining stays intact */
+  const W = (text: string, step = 0.09, wordStyle?: React.CSSProperties): React.ReactNode => {
+    if (!animate) return wordStyle ? <span style={wordStyle}>{text}</span> : text;
+    const words = String(text ?? '').split(' ').filter(Boolean);
+    return words.map((w, i) => {
+      const d = wDelay;
+      wDelay += step;
+      return (
+        <React.Fragment key={`${w}-${i}`}>
+          <span className="vw" style={{ animationDelay: `${d.toFixed(2)}s`, ...wordStyle }}>{w}</span>
+          {i < words.length - 1 ? ' ' : ''}
+        </React.Fragment>
+      );
+    });
+  };
+  const F = (extra = 0.18): React.CSSProperties | undefined => {
+    if (!animate) return undefined;
+    wDelay += extra;
+    return { animationDelay: `${wDelay.toFixed(2)}s` };
+  };
+  const fadeCls = animate ? 'vfade' : '';
   const nameStyle: React.CSSProperties = {
     fontFamily: t.nameFont,
     fontWeight: t.nameWeight,
     fontSize: t.nameSize,
     lineHeight: 1.25,
     color: t.head,
-    ...(t.nameGradient
-      ? { backgroundImage: t.nameGradient, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent' }
-      : {}),
   };
+  const gradWord: React.CSSProperties | undefined = t.nameGradient
+    ? { backgroundImage: t.nameGradient, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent', display: 'inline-block' }
+    : undefined;
   const amp = (
     <span className="block font-editorial italic text-2xl leading-none my-0.5" style={{ color: t.accent }}>
-      &amp;
+      {animate ? <span className="vw" style={{ animationDelay: `${(wDelay += 0.2).toFixed(2)}s` }}>&amp;</span> : <>&amp;</>}
     </span>
   );
 
@@ -462,11 +524,13 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
 
   return (
     <div
-      className="relative overflow-hidden shadow-2xl"
+      className={`relative overflow-hidden shadow-2xl ${animate ? 'vcard-open' : ''}`}
+      data-anim={animate ? id : undefined}
       style={{ background: t.bg, color: t.head, borderRadius: isModern ? 8 : id === 'classic' ? 10 : 28 }}
       data-design={id}
     >
       <Decor id={id} />
+      {animate && <Scene id={id} />}
       <div
         className={`relative z-10 mx-auto max-w-xl px-8 ${id === 'luxury' ? 'pt-24 pb-24' : id === 'romantic' || id === 'floral' ? 'pt-24 pb-24' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
         style={isModern ? { paddingInlineEnd: '2.5rem' } : undefined}
@@ -474,30 +538,30 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
         {/* header */}
         <div className="space-y-3">
           {id === 'royal' && <div className="flex justify-center"><Crown color={t.accent} /></div>}
-          <p className="font-editorial text-[11px] font-semibold tracking-[0.3em] uppercase" style={{ color: t.accent }}>
-            {t.eyebrow}
+          <p dir="ltr" className="font-editorial text-[11px] font-semibold tracking-[0.3em] uppercase" style={{ color: t.accent, textAlign: alignLeft ? 'right' : 'center' }}>
+            {W(t.eyebrow, 0.14)}
           </p>
-          <p className="text-sm font-medium" style={{ color: t.body }}>{t.intro}</p>
+          <p className="text-sm font-medium" style={{ color: t.body }}>{W(t.intro, 0.12)}</p>
           <h2 style={nameStyle} className="pt-1">
-            <span className="block">{invitation.groomName}</span>
+            <span className="block">{W(invitation.groomName, 0.4, gradWord)}</span>
             {isModern ? (
               <span className="block text-base font-normal tracking-[0.4em] my-1" style={{ color: t.accent }}>&mdash; و &mdash;</span>
             ) : amp}
-            <span className="block">{invitation.brideName}</span>
+            <span className="block">{W(invitation.brideName, 0.4, gradWord)}</span>
           </h2>
           {(id === 'royal' || id === 'classic' || id === 'luxury') && <OrnamentDivider color={t.accent} />}
         </div>
 
-        {photoEl}
+        {photoEl && <div className={fadeCls} style={F(0.1)}>{photoEl}</div>}
 
         <p className="text-[15px] leading-loose max-w-sm mx-auto" style={{ color: t.body, marginInline: alignLeft ? 0 : 'auto' }}>
-          {invitation.invitationText}
+          {W(invitation.invitationText, 0.07)}
         </p>
 
-        {dateBlock()}
+        <div className={fadeCls} style={F(0.3)}>{dateBlock()}</div>
 
         {/* venue */}
-        <div className="space-y-2.5">
+        <div className={`space-y-2.5 ${fadeCls}`} style={F(0.3)}>
           <div className={`inline-flex items-center gap-1.5 text-base font-bold ${alignLeft ? '' : 'justify-center'}`}>
             <MapPin className="w-4 h-4 shrink-0" style={{ color: t.accent }} />
             <span>{invitation.venueName || 'القاعة'}</span>
@@ -524,7 +588,7 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
         </div>
 
         {/* countdown */}
-        <div className="space-y-3 pt-1">
+        <div className={`space-y-3 pt-1 ${fadeCls}`} style={F(0.3)}>
           <p className="font-display text-lg font-bold">
             {countdown.state === 'future' ? 'باقي على أجمل يوم' : countdown.statusMessageAr}
           </p>

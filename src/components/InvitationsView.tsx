@@ -46,6 +46,7 @@ export const InvitationsView: React.FC<InvitationsViewProps> = ({
   onRequireAuth,
 }) => {
   const [designId, setDesignId] = useState<InvitationDesignId>('romantic');
+  const [replayKey, setReplayKey] = useState(0);
   const [groomName, setGroomName] = useState('محمد');
   const [brideName, setBrideName] = useState('منه');
   const [weddingDate, setWeddingDate] = useState('2026-11-30');
@@ -400,7 +401,19 @@ export const InvitationsView: React.FC<InvitationsViewProps> = ({
                 : 'مجاني بشعار الموقع'}
             </span>
           </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setReplayKey((k) => k + 1)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E8DCF3] bg-white text-[#5B3278] text-xs font-bold hover:bg-[#F3ECF9]"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>إعادة تشغيل العرض</span>
+            </button>
+          </div>
           <InvitationCardRenderer
+            key={`${designId}-${replayKey}`}
+            animate
             invitation={{
               designId,
               designPriceEgp: templatePrices[designId] ?? INVITATION_DESIGNS[designId].priceEgp,

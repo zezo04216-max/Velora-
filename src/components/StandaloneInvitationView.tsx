@@ -297,7 +297,7 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
         ) : (
           /* Stage 3: Opened Card + Seamless Integrated RSVP */
           <div className="space-y-8 animate-card-emerge">
-            <InvitationCardRenderer invitation={invitation} />
+            <InvitationCardRenderer invitation={invitation} animate />
 
             {/* Interactive Guest RSVP Section — Accessible WITHOUT Sign-in */}
             <div className="relative pt-14 sm:pt-16">
