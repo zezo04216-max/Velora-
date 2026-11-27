@@ -26,6 +26,7 @@ import { apiFetch, uploadImageFile } from '../utils/api';
 import { resolveMediaUrl } from '../utils/veloraAssets';
 import { EGYPT_GOVERNORATES, formatEgp, getAllEgyptGovernoratesWithExtras, matchesGovernorateStrict } from '../utils/veloraLogic';
 import { motion } from 'motion/react';
+import { RequestReplies } from './RequestReplies';
 import { CinematicTabPanel, VELORA_EASE } from './CinematicMotion';
 
 interface PhotographersViewProps {
@@ -684,6 +685,7 @@ export const PhotographersView: React.FC<PhotographersViewProps> = ({
                     الميزانية: {formatEgp(req.budgetEgp)}
                   </span>
                 </div>
+              <RequestReplies request={req} user={user} />
               </motion.div>
             ))}
           </div>

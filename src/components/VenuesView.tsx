@@ -28,6 +28,7 @@ import { apiFetch, uploadImageFile } from '../utils/api';
 import { resolveMediaUrl } from '../utils/veloraAssets';
 import { EGYPT_GOVERNORATES, formatEgp, getAllEgyptGovernoratesWithExtras, matchesGovernorateStrict } from '../utils/veloraLogic';
 import { motion } from 'motion/react';
+import { RequestReplies } from './RequestReplies';
 import { CinematicTabPanel, VELORA_EASE } from './CinematicMotion';
 
 interface VenuesViewProps {
@@ -719,6 +720,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({
                     <span className="font-semibold text-[#5B3278] tabular-nums">{formatEgp(req.budgetEgp)}</span>
                   </div>
                 </div>
+              <RequestReplies request={req} user={user} />
               </motion.div>
             ))}
           </div>

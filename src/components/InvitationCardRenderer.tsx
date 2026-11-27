@@ -595,7 +595,7 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
       <Decor id={id} />
       {animate && <Scene id={id} />}
       <div
-        className={`relative z-10 mx-auto max-w-xl ${id === 'modern' ? 'px-[54px]' : 'px-8'} ${id === 'modern' ? 'pt-[270px] pb-[290px]' : ART_IDS.includes(id) ? 'pt-[225px] pb-[265px]' : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
+        className={`relative z-10 mx-auto max-w-xl ${id === 'modern' ? 'px-[54px]' : 'px-8'} ${id === 'modern' ? 'pt-[270px] pb-[235px]' : ART_IDS.includes(id) ? (isFreeCard ? 'pt-[225px] pb-[215px]' : 'pt-[225px] pb-[265px]') : 'pt-14 pb-14'} space-y-6 ${alignLeft ? 'text-right' : 'text-center'}`}
         style={isModern ? { paddingInlineEnd: '2.5rem' } : undefined}
       >
         {/* header */}
@@ -660,7 +660,7 @@ export const InvitationCardRenderer: React.FC<InvitationCardRendererProps> = ({ 
 
         {/* watermark (free cards) / signature (paid cards) */}
         {isFreeCard ? (
-          <div className={`flex pt-1 ${ART_IDS.includes(id) ? 'mt-12' : ''} ${alignLeft ? 'justify-start' : 'justify-center'}`}>
+          <div className={`flex pt-1 ${ART_IDS.includes(id) ? 'mt-1' : ''} ${alignLeft ? 'justify-start' : 'justify-center'}`}>
             <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border" style={{ background: t.watermarkBg, color: t.watermarkText, borderColor: 'rgba(91,50,120,.25)' }}>
               <VeloraBrandMark size="sm" />
             </span>

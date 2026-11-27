@@ -1,7 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
-import App from './App.tsx';
 import './index.css';
 
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
@@ -18,8 +17,31 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   });
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+const inviteSlug = (() => {
+  try {
+    const v = new URLSearchParams(window.location.search).get('invite');
+    return v && v.trim() ? v.trim() : null;
+  } catch {
+    return null;
+  }
+})();
+
+const mount = async () => {
+  const root = createRoot(document.getElementById('root')!);
+  if (inviteSlug) {
+    const { default: GuestApp } = await import('./GuestApp.tsx');
+    root.render(
+      <StrictMode>
+        <GuestApp slug={inviteSlug} />
+      </StrictMode>
+    );
+  } else {
+    const { default: App } = await import('./App.tsx');
+    root.render(
+      <StrictMode>
+        <App />
+      </StrictMode>
+    );
+  }
+};
+void mount();

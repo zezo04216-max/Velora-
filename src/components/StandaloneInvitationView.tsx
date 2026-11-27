@@ -51,10 +51,20 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
     setError('');
     setEnvelopeStage('sealed');
     apiFetch<{ invitation: ElectronicInvitationRecord; stats: InvitationStats }>(
-      `/api/invitations/${encodeURIComponent(slug)}`
+      `/api/invitations/${encodeURIComponent(slug)}${allowReturnToPreviewHost ? '' : '?lite=1'}`
     )
       .then((res) => {
         if (!cancelled) setInvitation(res.invitation);
+        // warm the chosen design's artwork so the envelope and card appear instantly
+        try {
+          const id = res.invitation.designId || 'royal';
+          ['top', 'bottom'].forEach((part) => {
+            const img = new Image();
+            img.src = `/cards/${id}-${part}.webp`;
+          });
+        } catch {
+          /* ignore */
+        }
       })
       .catch((err) => {
         if (!cancelled) {
@@ -134,8 +144,10 @@ export const StandaloneInvitationView: React.FC<StandaloneInvitationViewProps> =
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 space-y-8">
         {loading ? (
-          <div className="velora-card rounded-3xl p-12 text-center text-sm text-[#5E4D6B]">
-            جاري تجهيز ظرف الدعوة الخاص بك...
+          <div className="vl-load" style={{ display: 'flex', position: 'fixed', inset: 0, zIndex: 50 }} role="status" aria-live="polite">
+            <div className="vl-mark">VÉLORA</div>
+            <div className="vl-env" />
+            <div className="vl-txt">جاري تجهيز دعوتك<span className="vl-dots"><i /><i /><i /></span></div>
           </div>
         ) : error || !invitation ? (
           <div className="velora-card rounded-3xl p-10 text-center space-y-3">

@@ -75,6 +75,30 @@ service cloud.firestore {
           && get(/databases/$(database)/documents/requests/$(id)).data.clientId == uid();
         allow update, delete: if isAdmin();
       }
+      // Provider offers/replies to a customer request. Doc id = provider uid (one reply each).
+      match /replies/{rid} {
+        allow read: if isAdmin() || (signedIn() && (resource == null || resource.data.clientId == uid() || resource.data.providerId == uid()));
+        allow create: if signedIn() && rid == uid()
+          && request.resource.data.providerId == uid()
+          && hasProfile() && profile().role in ['venue_owner','photographer','service_provider']
+          && request.resource.data.clientId == get(/databases/$(database)/documents/requests/$(id)).data.clientId
+          && request.resource.data.clientId != uid()
+          && get(/databases/$(database)/documents/requests/$(id)).data.status == 'open'
+          && request.resource.data.status == 'sent'
+          && request.resource.data.priceEgp is int && request.resource.data.priceEgp >= 0 && request.resource.data.priceEgp <= 10000000
+          && isStr(request.resource.data.noteAr, 600);
+        allow update: if signedIn() && (
+          (resource.data.clientId == uid()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+            && request.resource.data.status in ['accepted','ignored'])
+          || (resource.data.providerId == uid() && resource.data.status == 'sent'
+            && request.resource.data.status == 'sent'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['priceEgp','noteAr','serviceId','serviceTitle','providerPhone','updatedAt'])
+            && request.resource.data.priceEgp is int && request.resource.data.priceEgp >= 0 && request.resource.data.priceEgp <= 10000000
+            && isStr(request.resource.data.noteAr, 600))
+        ) || isAdmin();
+        allow delete: if isAdmin() || (signedIn() && resource.data.providerId == uid() && resource.data.status == 'sent');
+      }
     }
 
     // ---- bookings ----

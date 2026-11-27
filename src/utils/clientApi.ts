@@ -43,6 +43,7 @@ import type {
   BookingRecord,
   CoupleWorkspaceRecord,
   CustomerRequestRecord,
+  RequestReplyRecord,
   ElectronicInvitationRecord,
   FavoriteRecord,
   InvitationDesignId,
@@ -697,6 +698,111 @@ route('POST', '/api/services', async ({ body: b }) => {
 
 // ----- customer requests -----
 
+const PROVIDER_ROLES = ['venue_owner', 'photographer', 'service_provider'];
+
+route('GET', '/api/requests/([^/]+)/replies', async ({ params }) => {
+  const { db: d } = requireDb();
+  const user = await needUser();
+  const col = collection(d, 'requests', params[0], 'replies');
+  if (PROVIDER_ROLES.includes(user.role)) {
+    const mine = await getDoc(doc(col, user.id));
+    // a provider may also be the requester of this request
+    const asClient = await getDocs(query(col, where('clientId', '==', user.id)));
+    const list = asClient.docs.map((x) => x.data() as RequestReplyRecord);
+    if (mine.exists() && !list.find((r) => r.id === user.id)) list.push(mine.data() as RequestReplyRecord);
+    return { replies: list.sort(byNewest) };
+  }
+  const snap = await getDocs(query(col, where('clientId', '==', user.id)));
+  return { replies: snap.docs.map((x) => x.data() as RequestReplyRecord).sort(byNewest) };
+});
+
+route('POST', '/api/requests/([^/]+)/replies', async ({ params, body: b }) => {
+  const { db: d } = requireDb();
+  const user = await needUser();
+  if (!PROVIDER_ROLES.includes(user.role)) fail('الرد على الطلبات متاح لمقدمي الخدمات فقط.');
+  const reqSnap = await getDoc(doc(d, 'requests', params[0]));
+  if (!reqSnap.exists()) fail('هذا الطلب غير موجود.');
+  const req = reqSnap.data() as CustomerRequestRecord;
+  if (req.clientId === user.id) fail('لا يمكنك الرد على طلبك أنت.');
+  if (req.status !== 'open') fail('هذا الطلب لم يعد مفتوحًا.');
+  const price = Math.round(num(b.priceEgp, -1));
+  if (!(price >= 0 && price <= 10000000)) fail('يرجى إدخال سعر صحيح بالجنيه.');
+  const note = str(b.noteAr).slice(0, 600);
+  if (!note) fail('اكتب رسالة قصيرة للعميل.');
+  let serviceId: string | undefined;
+  let serviceTitle: string | undefined;
+  if (str(b.serviceId)) {
+    const sv = await getDoc(doc(d, 'services', str(b.serviceId)));
+    if (sv.exists() && (sv.data() as ServiceRecord).ownerId === user.id) {
+      serviceId = sv.id;
+      serviceTitle = (sv.data() as ServiceRecord).titleAr;
+    }
+  }
+  const ref = doc(d, 'requests', params[0], 'replies', user.id);
+  const existing = await getDoc(ref);
+  if (existing.exists()) {
+    const cur = existing.data() as RequestReplyRecord;
+    if (cur.status !== 'sent') fail('تم الرد على هذا الطلب وتحديد حالته بالفعل.');
+    await updateDoc(ref, clean({
+      priceEgp: price, noteAr: note, serviceId: serviceId ?? '', serviceTitle: serviceTitle ?? '',
+      providerPhone: b.sharePhone && user.phone ? user.phone : '', updatedAt: nowIso(),
+    }));
+    return { reply: { ...cur, priceEgp: price, noteAr: note } };
+  }
+  const rec: RequestReplyRecord = clean({
+    id: user.id,
+    requestId: params[0],
+    clientId: req.clientId,
+    providerId: user.id,
+    providerName: user.name,
+    providerRole: user.role,
+    serviceId,
+    serviceTitle,
+    priceEgp: price,
+    noteAr: note,
+    providerPhone: b.sharePhone && user.phone ? user.phone : undefined,
+    status: 'sent',
+    createdAt: nowIso(),
+  });
+  await setDoc(ref, rec);
+  await notify({
+    userId: req.clientId,
+    titleAr: 'وصلك عرض على طلبك',
+    bodyAr: `أرسل "${user.name}" عرضًا بسعر ${price} جنيه على طلبك "${req.titleAr}".`,
+    kind: 'system',
+  });
+  return { reply: rec };
+});
+
+route('DELETE', '/api/requests/([^/]+)/replies', async ({ params }) => {
+  const { db: d } = requireDb();
+  const user = await needUser();
+  await deleteDoc(doc(d, 'requests', params[0], 'replies', user.id));
+  return { ok: true };
+});
+
+route('POST', '/api/requests/([^/]+)/replies/([^/]+)/status', async ({ params, body: b }) => {
+  const { db: d } = requireDb();
+  const user = await needUser();
+  const status = str(b.status);
+  if (status !== 'accepted' && status !== 'ignored') fail('حالة غير صحيحة.');
+  const ref = doc(d, 'requests', params[0], 'replies', params[1]);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) fail('هذا العرض غير موجود.');
+  const rep = snap.data() as RequestReplyRecord;
+  if (rep.clientId !== user.id) fail('هذا العرض ليس على طلبك.');
+  await updateDoc(ref, { status, updatedAt: nowIso() });
+  if (status === 'accepted') {
+    await notify({
+      userId: rep.providerId,
+      titleAr: 'تم قبول عرضك',
+      bodyAr: `قبل ${user.name} عرضك. تواصل معه لإتمام الاتفاق.`,
+      kind: 'system',
+    });
+  }
+  return { reply: { ...rep, status } };
+});
+
 route('GET', '/api/requests', async ({ query: q }) => {
   const user = await currentUser();
   if (!user) return { requests: [] };
@@ -1152,7 +1258,7 @@ route('POST', '/api/invitations', async ({ body: b }) => {
   return { invitation: rec };
 });
 
-route('GET', '/api/invitations/([^/]+)', async ({ params }) => {
+route('GET', '/api/invitations/([^/]+)', async ({ params, query: q }) => {
   const { db: d } = requireDb();
   const slug = decodeURIComponent(params[0]);
   let snap;
@@ -1163,6 +1269,8 @@ route('GET', '/api/invitations/([^/]+)', async ({ params }) => {
   }
   if (!snap.exists()) return fail('رابط الدعوة غير موجود أو تم حذفه.');
   const invitation = snap.data() as ElectronicInvitationRecord;
+  // guest page only needs the card itself: skip the profile + RSVP round trips
+  if (q.get('lite') === '1') return { invitation, stats: summarizeInvitationRsvps([]), rsvps: [] };
   const user = await currentUser();
   const isOwner = Boolean(user && (user.id === invitation.ownerId || user.role === 'admin'));
   const rsvps = await rsvpsOf(slug, isOwner);

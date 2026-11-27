@@ -187,6 +187,23 @@ export interface CustomerRequestRecord {
   createdAt: string;
 }
 
+export interface RequestReplyRecord {
+  id: string; // = provider uid (one reply per provider per request)
+  requestId: string;
+  clientId: string;
+  providerId: string;
+  providerName: string;
+  providerRole: string;
+  serviceId?: string;
+  serviceTitle?: string;
+  priceEgp: number;
+  noteAr: string;
+  providerPhone?: string; // only present when the provider opted in
+  status: 'sent' | 'accepted' | 'ignored';
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface BookingRecord {
   id: string;
   clientId: string;

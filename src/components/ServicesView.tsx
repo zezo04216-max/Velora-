@@ -33,6 +33,7 @@ import {
   matchesGovernorateStrict,
 } from '../utils/veloraLogic';
 import { motion } from 'motion/react';
+import { RequestReplies } from './RequestReplies';
 import { CinematicTabPanel, VELORA_EASE } from './CinematicMotion';
 
 interface ServicesViewProps {
@@ -711,6 +712,7 @@ export const ServicesView: React.FC<ServicesViewProps> = ({
                   <span>{r.city}</span>
                   <span className="font-bold text-[#5B3278] tabular-nums">{formatEgp(r.budgetEgp)}</span>
                 </div>
+              <RequestReplies request={r} user={user} services={services} />
               </motion.div>
             ))}
             {requests.length === 0 && (
